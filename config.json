@@ -1,0 +1,15 @@
+{
+    "bot_name": "DecodeBot",
+    "enable_colors": true,
+    "debug_mode": false,
+    "developer_mode": false,
+    "log_level": "INFO",
+    "log_dir": "logs",
+    "history_size": 100,
+    "enable_time_aware_greeting": false,
+    "enable_emoji_greeting": false,
+    "plain_mode": false,
+    "enable_animations": true,
+    "reduced_motion": false,
+    "typewriter_speed": 0.015
+}
