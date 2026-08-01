@@ -2,7 +2,7 @@
 
 **Project:** DecodeBot AI — Chatbot Engine (Week 1) + Machine Learning Engine (Week 2)
 **Version:** `2.0.0` (`decodebot/__init__.py` + `CHANGELOG.md`)
-**Specification:** `SPEC.md.md` · **Plan:** `PLAN.md.md`
+**Specification:** `SPEC.md` · **Plan:** `PLAN.md`
 
 ---
 

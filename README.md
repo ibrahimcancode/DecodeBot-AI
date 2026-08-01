@@ -16,6 +16,30 @@ A rule-based conversational agent built in pure Python — the chat brain is 100
 
 Rule-based AI is transparent, predictable, and fully auditable. Every response can be traced to a specific pattern and handler. There's no black box, no statistical uncertainty, and no external API calls. The ML Engine lives in its own package (`decodebot/ml/`) and is never loaded at chatbot startup, so the fast, dependency-free CLI stays the default experience.
 
+## Project Structure
+
+```
+decodebot-ai/
+├── main.py                     # Entry point (python main.py [--gui])
+├── config.json                 # Configuration (chatbot + ML defaults)
+├── requirements.txt            # Production deps (split: chatbot core / ML)
+├── pyproject.toml              # Packaging + lint/test tool config
+│
+├── decodebot/                  # Main application source
+│   ├── core/                   # Chatbot engine (config, dispatcher, loop, ...)
+│   ├── rules/                  # Rule modules (greetings, exit, help, ...)
+│   ├── utils/                  # Animations, normalization, formatting, ...
+│   ├── gui/                    # Tkinter GUI + Machine Learning tab
+│   ├── ml/                     # Isolated ML Engine (train/predict/evaluate)
+│   └── plugins/                # Optional user-provided rule plugins
+│
+├── models/                     # Trained models + metadata model cards
+├── outputs/                    # Generated plots (confusion matrix, elbow, ...)
+├── datasets/                   # Dataset notes / future CSV datasets
+├── docs/                       # ARCHITECTURE, ML_GUIDE, CONFIGURATION, ...
+└── tests/                      # 500+ unit, integration, compliance tests
+```
+
 ## Features
 
 - Greeting, exit, and fallback handling with varied response pools
@@ -170,7 +194,7 @@ DecodeBot uses a clean layered architecture:
 - **Infrastructure Layer:** Config, logging, stats, history (`core/config.py`, `core/logger.py`, `core/stats.py`, `core/history.py`)
 - **ML Engine (isolated):** `ml/` package — dataset loading, preprocessing, training, prediction, evaluation, persistence, visualization (`ml/app_ml.py` is the single lazy bridge)
 
-See `docs/ARCHITECTURE.md`, `docs/ML_GUIDE.md`, and `SPEC.md.md` for full details.
+See `docs/ARCHITECTURE.md`, `docs/ML_GUIDE.md`, and `SPEC.md` for full details.
 
 ## Testing
 
@@ -190,7 +214,7 @@ The test suite includes:
 - [ML Guide](docs/ML_GUIDE.md)
 - [Plugin Guide](docs/PLUGIN_GUIDE.md)
 - [Hidden Commands](docs/HIDDEN_COMMANDS.md)
-- [Full Specification](SPEC.md.md)
+- [Full Specification](SPEC.md)
 
 ## License
 

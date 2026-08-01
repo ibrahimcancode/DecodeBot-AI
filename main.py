@@ -12,9 +12,11 @@ def main():
 
     if use_gui:
         from decodebot.gui.app_gui import run_gui
+
         return run_gui()
     else:
         from decodebot.core.app import run
+
         return run()
 
 

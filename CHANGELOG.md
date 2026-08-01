@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- Repository housekeeping for the public portfolio release:
+  - Renamed `SPEC.md.md` → `SPEC.md` and `PLAN.md.md` → `PLAN.md` (documentation links updated).
+  - Added `[project]` packaging metadata and a `decodebot` console entry point (`pip install -e .`); the ML dependencies remain optional (`[ml]` extra), preserving the stdlib-only chatbot core.
+  - Added GitHub Actions CI (`pytest`, `ruff`, `black`).
+  - Added `python -m decodebot` as an alternative to `python main.py`.
+
 ## [2.0.0] - 2026-08-02
 
 > **Release note:** Added: Machine Learning Data Classification Engine (Week 2).
