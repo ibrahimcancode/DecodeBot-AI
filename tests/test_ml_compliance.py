@@ -1,16 +1,19 @@
 """Week 2 Compliance Matrix gate — the 8 mandatory DecodeLabs rows.
 
-Row 1 (dataset loading & understanding) is implemented in Phase 16 and must
-pass. Rows 2-8 map to later phases (FR-173+) and are marked skipped until
-their pipeline stages land.
+Rows 1-3 (dataset loading, preprocessing scaling, shuffle/split) are
+implemented in Phases 16-17 and must pass. Rows 4-8 map to later phases
+(FR-187+) and are marked skipped until their pipeline stages land.
 """
 
 import logging
 
+import numpy as np
 import pytest
+from sklearn.preprocessing import StandardScaler
 
 from decodebot.ml.dataset_loader import load_dataset, render_explore_report
 from decodebot.ml.dataset_validator import validate_dataset
+from decodebot.ml.preprocessor import preprocess_and_split
 
 
 def test_row_1_load_and_understand_dataset(caplog):
@@ -50,14 +53,49 @@ def test_row_1_load_and_understand_dataset(caplog):
     assert any("Dataset loaded" in record.message for record in caplog.records)
 
 
-@pytest.mark.skip(reason="Phase 17: StandardScaler scaling — FR-173-FR-181")
 def test_row_2_preprocessing_scaling():
-    """Row 2: scaling applied; post-scaling mean ~ 0 and variance ~ 1."""
+    """Row 2: scaling applied; post-scaling mean ~ 0 and variance ~ 1.
+
+    Maps to FR-173-FR-181 / TC-ML-011..020.
+    """
+    dataset = load_dataset("iris", use_cache=False)
+    result = preprocess_and_split(dataset, random_state=42)
+
+    assert isinstance(result.preprocessor.scaler, StandardScaler)
+    np.testing.assert_allclose(result.X_train.mean(axis=0), 0.0, atol=1e-9)
+    np.testing.assert_allclose(result.X_train.var(axis=0), 1.0, atol=1e-6)
+    assert result.split_report.n_train == 120
+    assert result.split_report.n_test == 30
 
 
-@pytest.mark.skip(reason="Phase 17: shuffle + train/test split — FR-182-FR-186")
 def test_row_3_shuffle_and_split():
-    """Row 3: shuffled, stratified 80/20 split with configurable seed."""
+    """Row 3: shuffled, stratified 80/20 split with configurable seed.
+
+    Maps to FR-182-FR-186 / TC-ML-021..028.
+    """
+    dataset = load_dataset("iris", use_cache=False)
+    result = preprocess_and_split(dataset, random_state=42)
+
+    assert result.split_report.shuffled is True
+    assert result.split_report.stratified is True
+    assert result.split_report.n_train == 120
+    assert result.split_report.n_test == 30
+    assert result.split_report.train_class_counts == {
+        "setosa": 40,
+        "versicolor": 40,
+        "virginica": 40,
+    }
+    assert result.split_report.test_class_counts == {
+        "setosa": 10,
+        "versicolor": 10,
+        "virginica": 10,
+    }
+
+    again = preprocess_and_split(dataset, random_state=42)
+    assert np.array_equal(result.X_train, again.X_train)
+    assert np.array_equal(result.X_test, again.X_test)
+    assert np.array_equal(result.y_train, again.y_train)
+    assert np.array_equal(result.y_test, again.y_test)
 
 
 @pytest.mark.skip(reason="Phase 18: KNN INSTANTIATE -> FIT -> PREDICT — FR-187-FR-195")

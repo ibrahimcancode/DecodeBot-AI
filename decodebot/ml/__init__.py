@@ -10,6 +10,9 @@ Public API:
 - ``load_dataset()`` — Iris or CSV loading (FR-164-FR-166, FR-168).
 - ``render_explore_report()`` — dataset understanding report (FR-172).
 - ``validate_dataset()`` — integrity validation (FR-169-FR-170).
+- ``preprocess_and_split()`` — scaling, encoding, and stratified splitting
+  (FR-173-FR-186) with ``Preprocessor``, ``PreprocessResult``,
+  ``PreprocessingReport``, ``SplitReport``, and ``PreprocessingError``.
 """
 
 from .dataset import (
@@ -23,6 +26,14 @@ from .dataset import (
 )
 from .dataset_loader import load_dataset, render_explore_report
 from .dataset_validator import ValidationReport, validate_dataset
+from .preprocessor import (
+    PreprocessResult,
+    PreprocessingError,
+    PreprocessingReport,
+    Preprocessor,
+    SplitReport,
+    preprocess_and_split,
+)
 
 __all__ = [
     "Dataset",
@@ -36,4 +47,10 @@ __all__ = [
     "render_explore_report",
     "ValidationReport",
     "validate_dataset",
+    "Preprocessor",
+    "PreprocessingError",
+    "PreprocessingReport",
+    "PreprocessResult",
+    "SplitReport",
+    "preprocess_and_split",
 ]

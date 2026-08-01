@@ -111,6 +111,7 @@ def test_ml_package_modules_are_discoverable():
         "dataset",
         "dataset_loader",
         "dataset_validator",
+        "preprocessor",
     ):
         assert os.path.isfile(
             os.path.join(ML_DIR, module_name + ".py")
