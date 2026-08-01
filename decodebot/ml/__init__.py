@@ -22,6 +22,17 @@ Public API:
 - ``evaluate()`` / ``cross_validate()`` / ``dummy_baseline()`` — model
   evaluation (FR-201-FR-209) with ``EvaluationReport``,
   ``CrossValidationResult``, and ``EvaluationError``.
+- ``save_model()`` / ``load_model()`` / ``list_models()`` — model
+  persistence and the ``models`` listing (FR-210-FR-214) with ``ModelInfo``,
+  ``ModelManagerError``, and ``render_models_table()``.
+- ``compare_models()`` / ``save_best_model()`` — same-split classifier
+  comparison and best-model selection (FR-215-FR-216) with
+  ``ComparisonReport``, ``ClassifierComparison``, and
+  ``render_comparison_table()``.
+- ``confusion_matrix_heatmap()`` / ``k_tuning_elbow()`` /
+  ``scaling_comparison()`` / ``model_comparison_bar()`` — file-based
+  visualization saved to ``outputs/`` (FR-217-FR-221) with
+  ``VisualizationError`` and ``VisualizationUnavailableError``.
 """
 
 from .dataset import (
@@ -35,6 +46,29 @@ from .dataset import (
 )
 from .dataset_loader import load_dataset, render_explore_report
 from .dataset_validator import ValidationReport, validate_dataset
+from .model_manager import (
+    ClassifierComparison,
+    ComparisonReport,
+    ModelInfo,
+    ModelManagerError,
+    compare_models,
+    list_models,
+    load_model,
+    render_comparison_table,
+    render_models_table,
+    save_best_model,
+    save_model,
+)
+from .visualization import (
+    DEFAULT_OUTPUTS_DIR,
+    VisualizationError,
+    VisualizationUnavailableError,
+    confusion_matrix_heatmap,
+    k_tuning_elbow,
+    matplotlib_available,
+    model_comparison_bar,
+    scaling_comparison,
+)
 from .evaluator import (
     CrossValidationResult,
     EvaluationError,
@@ -78,6 +112,25 @@ __all__ = [
     "render_explore_report",
     "ValidationReport",
     "validate_dataset",
+    "ClassifierComparison",
+    "ComparisonReport",
+    "ModelInfo",
+    "ModelManagerError",
+    "compare_models",
+    "list_models",
+    "load_model",
+    "render_comparison_table",
+    "render_models_table",
+    "save_best_model",
+    "save_model",
+    "DEFAULT_OUTPUTS_DIR",
+    "VisualizationError",
+    "VisualizationUnavailableError",
+    "confusion_matrix_heatmap",
+    "k_tuning_elbow",
+    "matplotlib_available",
+    "model_comparison_bar",
+    "scaling_comparison",
     "Predictor",
     "PredictorError",
     "SinglePrediction",
