@@ -597,12 +597,12 @@ decodebot-ai/
 **Verifies:** Remaining `TC-ML-059`–`070+`; full `tests/test_ml_compliance.py` (all 8 rows).
 
 **Definition of Done:**
-- [ ] `help` output lists all ML commands, clearly grouped, alongside the existing Chatbot commands.
-- [ ] **Re-run the full Week 1 Compliance Matrix — it must still pass 100%** (this is the highest-risk phase for accidental chatbot regression, since it touches `dispatcher.py`).
-- [ ] `python main.py` (chatbot-only session, no ML command invoked) still starts in under 300ms (`NFR-075`), confirming lazy ML imports work.
-- [ ] `tests/test_ml_isolation.py` passes with the dispatcher changes included.
-- [ ] **All 8 rows of the Week 2 Compliance Matrix now pass.**
-- [ ] If GUI was built: the ML panel's "Train"/"Classify" buttons call the identical functions as their CLI equivalents.
+- [x] `help` output lists all ML commands, clearly grouped, alongside the existing Chatbot commands.
+- [x] **Re-run the full Week 1 Compliance Matrix — it must still pass 100%** (this is the highest-risk phase for accidental chatbot regression, since it touches `dispatcher.py`).
+- [x] `python main.py` (chatbot-only session, no ML command invoked) still starts in under 300ms (`NFR-075`), confirming lazy ML imports work.
+- [x] `tests/test_ml_isolation.py` passes with the dispatcher changes included.
+- [x] **All 8 rows of the Week 2 Compliance Matrix now pass.**
+- [x] If GUI was built: the ML panel's "Train"/"Classify" buttons call the identical functions as their CLI equivalents.
 
 **Suggested Commit Message:** `feat: Phase 21 - ML CLI/GUI integration, config, logging, error handling (FR-222-FR-232)`
 
@@ -619,10 +619,10 @@ decodebot-ai/
 - Confirm `tests/test_ml_isolation.py` and the Week 1 Compliance Matrix both remain green.
 
 **Definition of Done:**
-- [ ] All 80+ ML test cases exist and pass.
-- [ ] `tests/test_ml_compliance.py` (8/8) and `tests/test_compliance.py` (Week 1, 8/8) both pass in the same test run.
-- [ ] Coverage report confirms ≥90% on `decodebot/ml/`.
-- [ ] Combined test suite (Week 1 + GUI/Animation + Week 2) runs in a reasonable CI time budget.
+- [x] All 80+ ML test cases exist and pass.
+- [x] `tests/test_ml_compliance.py` (8/8) and `tests/test_compliance.py` (Week 1, 8/8) both pass in the same test run.
+- [x] Coverage report confirms ≥90% on `decodebot/ml/`.
+- [x] Combined test suite (Week 1 + GUI/Animation + Week 2) runs in a reasonable CI time budget.
 
 **Suggested Commit Message:** `test: Phase 22 - complete ML test suite, 80+ cases, isolation verified`
 
@@ -639,9 +639,9 @@ decodebot-ai/
 - Screenshot/GIF of a `train` → `evaluate` session (and the GUI ML panel + predict form, if built).
 
 **Definition of Done:**
-- [ ] Every Week 2 GitHub Standards checklist item in `SPEC.md` Part II is satisfied.
-- [ ] A reviewer can go from `git clone` to a working `train`/`evaluate` demo using only the README.
-- [ ] `docs/ML_GUIDE.md` is complete and cross-linked from the README.
+- [x] Every Week 2 GitHub Standards checklist item in `SPEC.md` Part II is satisfied.
+- [x] A reviewer can go from `git clone` to a working `train`/`evaluate` demo using only the README.
+- [x] `docs/ML_GUIDE.md` is complete and cross-linked from the README.
 
 **Suggested Commit Message:** `docs: Phase 23 - ML documentation & GitHub packaging (Week 2)`
 
@@ -660,12 +660,12 @@ decodebot-ai/
 - Confirm `__version__` reflects `2.0.0` and `CHANGELOG.md` matches.
 
 **Definition of Done (Release Gate):**
-- [ ] Every row of the Week 1 Compliance Matrix: ✅ (unchanged, re-verified)
-- [ ] Every row of the Week 2 Compliance Matrix: ✅
-- [ ] Every box of the Week 1 and Week 2 Acceptance Criteria sections: ✅
-- [ ] All Part I and Part II NFR benchmarks met.
-- [ ] Tagged Git release `v2.0.0` created matching `__version__` and `CHANGELOG.md`.
-- [ ] **DecodeBot AI v2.0.0 (Chatbot Engine + Machine Learning Engine) is ready to submit and to publish.**
+- [x] Every row of the Week 1 Compliance Matrix: ✅ (unchanged, re-verified)
+- [x] Every row of the Week 2 Compliance Matrix: ✅
+- [x] Every box of the Week 1 and Week 2 Acceptance Criteria sections: ✅
+- [x] All Part I and Part II NFR benchmarks met.
+- [ ] Tagged Git release `v2.0.0` created matching `__version__` and `CHANGELOG.md`. (pending: git tag + push — requires explicit approval)
+- [x] **DecodeBot AI v2.0.0 (Chatbot Engine + Machine Learning Engine) is ready to submit and to publish.**
 
 **Suggested Commit Message:** `release: v2.0.0 - Week 2 Machine Learning Engine complete, Week 1 preserved`
 

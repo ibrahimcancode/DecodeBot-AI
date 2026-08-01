@@ -1,6 +1,5 @@
 import json
 import os
-import logging
 
 DEFAULT_CONFIG: dict = {
     "bot_name": "DecodeBot",
@@ -16,6 +15,17 @@ DEFAULT_CONFIG: dict = {
     "enable_animations": True,
     "reduced_motion": False,
     "typewriter_speed": 0.015,
+    "ml_dataset": "iris",
+    "ml_target_column": None,
+    "ml_test_size": 0.2,
+    "ml_random_state": 42,
+    "knn_k": 5,
+    "classifier_type": "knn",
+    "scaler_type": "standard",
+    "ml_missing_value_strategy": "error",
+    "models_dir": "models/",
+    "ml_outputs_dir": "outputs/",
+    "ml_log_level": "INFO",
 }
 
 CONFIG_SCHEMA: dict = {
@@ -32,6 +42,17 @@ CONFIG_SCHEMA: dict = {
     "enable_animations": bool,
     "reduced_motion": bool,
     "typewriter_speed": (int, float),
+    "ml_dataset": str,
+    "ml_target_column": (str, type(None)),
+    "ml_test_size": (int, float),
+    "ml_random_state": int,
+    "knn_k": int,
+    "classifier_type": str,
+    "scaler_type": str,
+    "ml_missing_value_strategy": str,
+    "models_dir": str,
+    "ml_outputs_dir": str,
+    "ml_log_level": str,
 }
 
 CONFIG_PATHS = [
@@ -56,6 +77,6 @@ def load_config() -> dict:
                         config[key] = value
                     else:
                         pass
-            except Exception as e:
+            except Exception:
                 pass
     return config

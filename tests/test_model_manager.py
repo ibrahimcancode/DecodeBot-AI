@@ -173,6 +173,27 @@ def test_list_models_empty_dir(tmp_path):
     assert mm.list_models(models_dir=str(tmp_path / "missing")) == []
 
 
+def test_metadata_deleted_graceful_degradation(trained, iris_split, tmp_path):
+    """FR-213 edge: a deleted metadata .json does not break list or load."""
+    mm.save_model(
+        trained,
+        "knn_iris",
+        models_dir=str(tmp_path),
+        metadata={"classifier_type": "knn", "test_accuracy": 0.9},
+    )
+    assert os.path.isfile(os.path.join(tmp_path, "knn_iris.json"))
+    os.remove(os.path.join(tmp_path, "knn_iris.json"))
+
+    infos = mm.list_models(models_dir=str(tmp_path))
+    assert [info.name for info in infos] == ["knn_iris"]
+    assert infos[0].metadata == {}
+
+    loaded = mm.load_model("knn_iris", models_dir=str(tmp_path))
+    np.testing.assert_array_equal(
+        loaded.predict(iris_split.X_test), trained.predict(iris_split.X_test)
+    )
+
+
 def test_render_models_table_empty_message(tmp_path):
     """FR-214 AC: an empty listing renders the friendly empty message."""
     assert mm.render_models_table([]) == mm.NO_SAVED_MODELS_MESSAGE
@@ -193,6 +214,19 @@ def test_render_models_table_columns(trained, tmp_path):
     table = mm.render_models_table(mm.list_models(models_dir=str(tmp_path)))
     for token in ("Model", "Classifier", "Test Acc", "Trained", "Size", "knn_iris"):
         assert token in table
+
+
+def test_models_table_falls_back_to_saved_at(trained, tmp_path):
+    """FR-213 edge: without trained_at, the table shows the saved_at time."""
+    mm.save_model(
+        trained,
+        "knn_iris",
+        models_dir=str(tmp_path),
+        metadata={"classifier_type": "knn"},
+    )
+    infos = mm.list_models(models_dir=str(tmp_path))
+    row = mm._model_row(infos[0])
+    assert row[3] != "?"
 
 
 def test_compare_models_identical_split(iris_split):

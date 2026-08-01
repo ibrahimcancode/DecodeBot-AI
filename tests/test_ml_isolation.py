@@ -106,7 +106,7 @@ def test_main_py_does_not_import_ml_libraries():
 
 
 def test_ml_package_modules_are_discoverable():
-    """Every ML Engine module exists on disk (Phases 16-20 module set)."""
+    """Every ML Engine module exists on disk (Phases 16-21 module set)."""
     for module_name in (
         "dataset",
         "dataset_loader",
@@ -117,6 +117,7 @@ def test_ml_package_modules_are_discoverable():
         "evaluator",
         "model_manager",
         "visualization",
+        "app_ml",
     ):
         assert os.path.isfile(
             os.path.join(ML_DIR, module_name + ".py")

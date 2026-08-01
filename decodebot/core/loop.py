@@ -2,6 +2,7 @@ import os
 import time
 import logging
 
+from decodebot import __version__
 from decodebot.core.config import load_config
 from decodebot.core.dispatcher import dispatch
 from decodebot.core.io_handler import get_input, print_response
@@ -9,11 +10,11 @@ from decodebot.core.session import SessionState
 from decodebot.core.intents import Intent
 from decodebot.utils.animations import animated_print, show_thinking
 
-BANNER = """
+BANNER = f"""
 +==========================================+
 |         D E C O D E B O T   A I         |
 |   Rule-Based Conversational Agent        |
-|              v1.0.0                      |
+|              v{__version__}                      |
 +==========================================+
 """
 
@@ -25,8 +26,6 @@ def run_session() -> int:
     session = SessionState()
     session.start_time = time.monotonic()
     session.config = config
-    bot_name = config.get("bot_name", "DecodeBot")
-    prompt_prefix = f"{bot_name}: "
     anim_enabled = config.get("enable_animations", True)
     reduced = config.get("reduced_motion", False)
     tw_speed = config.get("typewriter_speed", 0.015)
@@ -45,6 +44,7 @@ def run_session() -> int:
             return 0
 
         try:
+            session.last_input = raw
             intent = dispatch_intent(raw, session)
             if intent == Intent.EXIT:
                 _print_farewell(session, "command")
@@ -61,6 +61,7 @@ def run_session() -> int:
                 session.reset()
                 session.start_time = time.monotonic()
                 from decodebot.rules.help_about_version import get_reset_text
+
                 resp = get_reset_text()
                 animated_print(f"Bot: {resp}", enabled=anim_enabled, speed=tw_speed)
                 session.record_turn(raw, intent, resp)
@@ -84,14 +85,14 @@ def run_session() -> int:
             consecutive_errors += 1
             if consecutive_errors >= 5:
                 print_response(
-                    "Bot: Too many errors. I need to stop now. "
-                    "Check the logs for details."
+                    "Bot: Too many errors. I need to stop now. " "Check the logs for details."
                 )
                 return 1
 
 
 def dispatch_intent(raw_input: str, session: SessionState) -> Intent:
     from decodebot.core.rule_engine import classify_intent
+
     return classify_intent(raw_input, session)
 
 
@@ -117,6 +118,7 @@ def _build_summary(session: SessionState) -> str | None:
     if session.message_count == 0:
         return "We didn't get to chat much \u2014 see you next time!"
     from decodebot.core.stats import get_session_duration
+
     dur = get_session_duration(session)
     return f"We exchanged {session.message_count} messages over {dur}. Thanks for chatting!"
 

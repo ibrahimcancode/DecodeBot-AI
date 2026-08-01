@@ -4181,18 +4181,18 @@ Minimum viable dataset size (exactly enough samples for a valid stratified split
 
 | Feature Area | Completion Criteria |
 |---|---|
-| Dataset loading & understanding | ☐ Iris loads correctly ☐ CSV support works ☐ metadata/class-balance reporting correct ☐ validation rejects malformed data |
-| Preprocessing | ☐ `StandardScaler` applied correctly ☐ fit-on-train-only verified ☐ swappable scaler works ☐ shuffling verified |
-| Train/test split | ☐ 80/20 default ☐ stratified ☐ reproducible via `random_state` ☐ no data leakage (regression-tested) |
-| Model training | ☐ KNN required baseline works ☐ configurable K ☐ multi-classifier support ☐ never crashes on bad input |
-| Prediction | ☐ batch prediction correct ☐ single-sample prediction correct ☐ requires a trained model with a friendly guard |
-| Evaluation | ☐ confusion matrix ☐ precision/recall/F1 ☐ accuracy reported alongside (never alone) ☐ "accuracy mirage" warning functions |
-| Persistence & comparison | ☐ save/load round-trips correctly ☐ metadata recorded ☐ `compare` produces a correct side-by-side table |
-| Visualization | ☐ confusion matrix heatmap saved ☐ K-tuning curve saved ☐ never blocks CLI/GUI ☐ works headless |
-| CLI/GUI integration | ☐ ML commands appear in `help` ☐ GUI ML panel calls identical functions to the CLI ☐ zero chat-text ever reaches a `scikit-learn` model |
-| Architecture isolation | ☐ `test_ml_isolation.py` passes ☐ chatbot startup time unaffected ☐ Week 1 Compliance Matrix still passes 100% |
-| Testing | ☐ 80+ new ML test cases ☐ Week 2 Compliance Matrix 8/8 ☐ ≥90% coverage on `decodebot/ml/` |
-| Documentation | ☐ `docs/ML_GUIDE.md` complete ☐ `docs/CONFIGURATION.md` updated with ML keys ☐ this SPEC.md's Part II kept current |
+| Dataset loading & understanding | ☑ Iris loads correctly ☑ CSV support works ☑ metadata/class-balance reporting correct ☑ validation rejects malformed data |
+| Preprocessing | ☑ `StandardScaler` applied correctly ☑ fit-on-train-only verified ☑ swappable scaler works ☑ shuffling verified |
+| Train/test split | ☑ 80/20 default ☑ stratified ☑ reproducible via `random_state` ☑ no data leakage (regression-tested) |
+| Model training | ☑ KNN required baseline works ☑ configurable K ☑ multi-classifier support ☑ never crashes on bad input |
+| Prediction | ☑ batch prediction correct ☑ single-sample prediction correct ☑ requires a trained model with a friendly guard |
+| Evaluation | ☑ confusion matrix ☑ precision/recall/F1 ☑ accuracy reported alongside (never alone) ☑ "accuracy mirage" warning functions |
+| Persistence & comparison | ☑ save/load round-trips correctly ☑ metadata recorded ☑ `compare` produces a correct side-by-side table |
+| Visualization | ☑ confusion matrix heatmap saved ☑ K-tuning curve saved ☑ never blocks CLI/GUI ☑ works headless |
+| CLI/GUI integration | ☑ ML commands appear in `help` ☑ GUI ML panel calls identical functions to the CLI ☑ zero chat-text ever reaches a `scikit-learn` model |
+| Architecture isolation | ☑ `test_ml_isolation.py` passes ☑ chatbot startup time unaffected ☑ Week 1 Compliance Matrix still passes 100% |
+| Testing | ☑ 80+ new ML test cases ☑ Week 2 Compliance Matrix 8/8 ☑ ≥90% coverage on `decodebot/ml/` |
+| Documentation | ☑ `docs/ML_GUIDE.md` complete ☑ `docs/CONFIGURATION.md` updated with ML keys ☑ this SPEC.md's Part II kept current |
 
 ## GitHub Standards — Machine Learning Engine Additions
 

@@ -36,6 +36,12 @@ def setup_logging(config: dict | None = None) -> logging.Logger:
     console_handler.setFormatter(console_formatter)
     root_logger.addHandler(console_handler)
 
+    ml_level_str = config.get("ml_log_level", log_level_str).upper()
+    ml_log_level_value = getattr(logging, ml_level_str, logging.INFO)
+    ml_logger = logging.getLogger("decodebot.ml")
+    ml_logger.setLevel(ml_log_level_value)
+    ml_logger.propagate = True
+
     logger = logging.getLogger("decodebot")
     logger.info("Session started.")
     return logger

@@ -13,6 +13,8 @@ class SessionState:
     intent_counts: dict[str, int] = field(default_factory=dict)
     start_time: float | None = None
     pending_text: str | None = None
+    last_input: str = ""
+    ml_state: dict[str, object] = field(default_factory=dict)
 
     def record_turn(self, raw_input: str, intent: Any, response: str) -> None:
         from decodebot.core.intents import Intent
@@ -32,7 +34,7 @@ class SessionState:
         if intent == Intent.GREETING and not self.first_greeting_seen:
             self.first_greeting_seen = True
 
-        intent_name = intent.name if hasattr(intent, 'name') else str(intent)
+        intent_name = intent.name if hasattr(intent, "name") else str(intent)
         if intent_name:
             self.intent_counts[intent_name] = self.intent_counts.get(intent_name, 0) + 1
 
@@ -45,3 +47,5 @@ class SessionState:
         self.user_name = None
         self.intent_counts.clear()
         self.pending_text = None
+        self.last_input = ""
+        self.ml_state.clear()

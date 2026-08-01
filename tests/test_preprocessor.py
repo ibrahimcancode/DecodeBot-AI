@@ -212,6 +212,46 @@ def test_invalid_test_size_rejected(iris, bad):
         preprocess_and_split(iris, test_size=bad)
 
 
+@pytest.mark.parametrize("size", [0.05, 0.95])
+def test_test_size_extremes_valid(iris, size):
+    """FR-182 edge: extreme-but-valid test sizes still split and stratify."""
+    result = preprocess_and_split(iris, test_size=size, random_state=42)
+    total = result.X_train.shape[0] + result.X_test.shape[0]
+    assert total == 150
+    assert result.split_report.stratified is True
+    assert result.split_report.n_train + result.split_report.n_test == 150
+
+
+def test_constant_feature_column_scales_to_zero(iris):
+    """FR-173 edge: a zero-variance column scales to zeros without crashing."""
+    features = np.hstack([iris.features, np.full((150, 1), 7.0)])
+    dataset = Dataset(
+        features=features,
+        targets=iris.targets,
+        feature_names=iris.feature_names + ["constant"],
+        source="iris-with-constant",
+    )
+    result = preprocess_and_split(dataset)
+    np.testing.assert_allclose(result.X_train[:, -1], 0.0, atol=1e-9)
+
+
+def test_single_feature_dataset_preprocesses():
+    """FR-173 edge: a single-feature dataset runs through the whole pipeline."""
+    features = np.random.RandomState(0).rand(30, 1)
+    targets = np.zeros(30, dtype=int)
+    targets[15:] = 1
+    dataset = Dataset(
+        features=features,
+        targets=targets,
+        feature_names=["f0"],
+        source="single-feature.csv",
+    )
+    result = preprocess_and_split(dataset, random_state=42)
+    assert result.X_train.shape[1] == 1
+    assert result.X_test.shape[1] == 1
+    assert result.split_report.stratified is True
+
+
 def test_original_dataset_not_mutated(iris):
     """FR-181: preprocessing never mutates the input dataset."""
     features_before = iris.features.copy()

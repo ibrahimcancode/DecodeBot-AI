@@ -2,7 +2,18 @@ from decodebot.core.intents import Intent
 from decodebot.core.session import SessionState
 from decodebot.core.responder import get_response
 from decodebot.rules import greetings, exit, unknown
-from decodebot.rules.help_about_version import COMMANDS
+
+_ML_INTENTS: frozenset = frozenset(
+    {
+        Intent.TRAIN,
+        Intent.PREDICT,
+        Intent.EVALUATE,
+        Intent.EXPLORE,
+        Intent.MODELS,
+        Intent.COMPARE,
+        Intent.TUNE_K,
+    }
+)
 
 
 def dispatch(intent: Intent, session: SessionState) -> str:
@@ -43,6 +54,11 @@ def dispatch(intent: Intent, session: SessionState) -> str:
 
     elif intent == Intent.EASTER_EGG:
         return get_response(intent, session)
+
+    elif intent in _ML_INTENTS:
+        from decodebot.ml import app_ml
+
+        return app_ml.dispatch_ml(intent, session)
 
     elif intent == Intent.EMPTY_INPUT:
         return unknown.get_empty_input_response()

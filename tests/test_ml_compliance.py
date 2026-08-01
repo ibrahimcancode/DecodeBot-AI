@@ -3,14 +3,13 @@
 Rows 1-5 (dataset loading, preprocessing scaling, shuffle/split, KNN
 workflow, model training) are implemented in Phases 16-18 and must pass.
 Rows 6-7 (prediction, evaluation beyond accuracy) land in Phase 19. Row 8
-maps to later phases (full suite + gate) and is marked skipped until its
-pipeline stage lands.
+(the full automated suite + gate) lands in Phase 21 with the ML command
+wiring and must pass as part of the combined suite.
 """
 
 import logging
 
 import numpy as np
-import pytest
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier
@@ -198,6 +197,73 @@ def test_row_7_evaluate_beyond_accuracy():
     assert "Macro average" in text
 
 
-@pytest.mark.skip(reason="Phase 22: full automated ML suite + gate — all of Category R")
-def test_row_8_testing():
-    """Row 8: full test suite covers every pipeline stage; gate passes."""
+def test_row_8_testing(tmp_path):
+    """Row 8: full test suite covers every pipeline stage; gate passes.
+
+    End-to-end through the registered ML commands: classification, dispatch,
+    the full train -> evaluate -> predict -> persist -> reload flow, plus the
+    config keys, help grouping, and lazy startup. This test participates in
+    the suite that the gate runs, so its green status is itself the gate.
+    """
+    from decodebot.core.dispatcher import dispatch
+    from decodebot.core.intents import Intent
+    from decodebot.core.session import SessionState
+    from decodebot.core.rule_engine import classify_intent
+    from decodebot.rules.help_about_version import get_help_text
+    from decodebot.ml import app_ml
+
+    session = SessionState()
+    session.config = {
+        "ml_dataset": "iris",
+        "ml_target_column": None,
+        "ml_test_size": 0.2,
+        "ml_random_state": 42,
+        "knn_k": 5,
+        "classifier_type": "knn",
+        "scaler_type": "standard",
+        "ml_missing_value_strategy": "error",
+        "models_dir": str(tmp_path),
+        "ml_outputs_dir": str(tmp_path),
+        "ml_log_level": "INFO",
+    }
+
+    for cmd, intent in (
+        ("train", Intent.TRAIN),
+        ("predict", Intent.PREDICT),
+        ("evaluate", Intent.EVALUATE),
+        ("explore", Intent.EXPLORE),
+        ("models", Intent.MODELS),
+        ("compare", Intent.COMPARE),
+        ("tune-k", Intent.TUNE_K),
+    ):
+        assert classify_intent(cmd, session) == intent
+
+    assert "Machine Learning:" in get_help_text()
+
+    explore_text = dispatch(Intent.EXPLORE, session)
+    assert "Dataset: iris" in explore_text
+
+    train_text = dispatch(Intent.TRAIN, session)
+    assert "Saved model to" in train_text
+    assert "Test accuracy:" in train_text
+
+    session.last_input = "predict 5.1,3.5,1.4,0.2"
+    predict_text = dispatch(Intent.PREDICT, session)
+    assert "setosa" in predict_text
+
+    evaluate_text = dispatch(Intent.EVALUATE, session)
+    assert "Confusion Matrix" in evaluate_text
+
+    models_text = dispatch(Intent.MODELS, session)
+    assert "Model" in models_text
+
+    compare_text = dispatch(Intent.COMPARE, session)
+    assert "Classifier" in compare_text
+
+    tune_text = dispatch(Intent.TUNE_K, session)
+    assert "Best K:" in tune_text
+
+    saved = app_ml.list_models(models_dir=str(tmp_path))
+    assert saved, "train must persist a model"
+    reloaded = app_ml.load_model(saved[0].name, models_dir=str(tmp_path))
+    assert callable(getattr(reloaded, "predict", None))

@@ -11,5 +11,16 @@
     "plain_mode": false,
     "enable_animations": true,
     "reduced_motion": false,
-    "typewriter_speed": 0.015
+    "typewriter_speed": 0.015,
+    "ml_dataset": "iris",
+    "ml_target_column": null,
+    "ml_test_size": 0.2,
+    "ml_random_state": 42,
+    "knn_k": 5,
+    "classifier_type": "knn",
+    "scaler_type": "standard",
+    "ml_missing_value_strategy": "error",
+    "models_dir": "models/",
+    "ml_outputs_dir": "outputs/",
+    "ml_log_level": "INFO"
 }

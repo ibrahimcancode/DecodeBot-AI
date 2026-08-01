@@ -122,15 +122,15 @@ def test_tune_k_custom_range(iris_split):
 
 def test_tune_k_filters_out_of_range_k(caplog):
     """FR-190: out-of-range K values are skipped with a logged warning."""
-    X_train = np.array([[i, i * 2] for i in range(8)], dtype=float)
-    y_train = np.array([0, 0, 0, 0, 1, 1, 1, 1])
+    X_train = np.array([[i, i * 2] for i in range(20)], dtype=float)
+    y_train = np.array([0] * 10 + [1] * 10)
     X_test = np.array([[0.0, 0.0], [1.0, 2.0]])
     y_test = np.array([0, 1])
 
     with caplog.at_level(logging.WARNING, logger="decodebot.ml.trainer"):
-        result = Trainer().tune_k(X_train, y_train, X_test, y_test, k_range=range(1, 11))
+        result = Trainer().tune_k(X_train, y_train, X_test, y_test, k_range=range(11, 24))
 
-    assert [k for k, _ in result.scores] == [1, 2, 3, 4, 5, 6, 7, 8]
+    assert [k for k, _ in result.scores] == list(range(11, 21))
     assert any("out-of-range" in record.message for record in caplog.records)
 
 

@@ -481,7 +481,7 @@ def _model_row(info: ModelInfo) -> tuple[str, str, str, str, str]:
         accuracy_text = f"{float(accuracy):.4f}"
     else:
         accuracy_text = "?"
-    trained = meta.get("trained_at")
+    trained = meta.get("trained_at") or meta.get("saved_at")
     trained_text = str(trained)[:19] if trained else "?"
     return (
         info.name,
