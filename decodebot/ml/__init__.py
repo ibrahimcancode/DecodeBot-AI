@@ -13,6 +13,9 @@ Public API:
 - ``preprocess_and_split()`` — scaling, encoding, and stratified splitting
   (FR-173-FR-186) with ``Preprocessor``, ``PreprocessResult``,
   ``PreprocessingReport``, ``SplitReport``, and ``PreprocessingError``.
+- ``Trainer`` / ``train_pipeline()`` — model training (FR-187-FR-195) with
+  ``TrainingResult``, ``TuneResult``, ``TrainRunReport``, and
+  ``TrainingError``.
 """
 
 from .dataset import (
@@ -34,6 +37,14 @@ from .preprocessor import (
     SplitReport,
     preprocess_and_split,
 )
+from .trainer import (
+    TrainRunReport,
+    TrainingError,
+    TrainingResult,
+    Trainer,
+    TuneResult,
+    train_pipeline,
+)
 
 __all__ = [
     "Dataset",
@@ -53,4 +64,10 @@ __all__ = [
     "PreprocessResult",
     "SplitReport",
     "preprocess_and_split",
+    "Trainer",
+    "TrainingError",
+    "TrainingResult",
+    "TuneResult",
+    "TrainRunReport",
+    "train_pipeline",
 ]

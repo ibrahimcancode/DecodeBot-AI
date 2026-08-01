@@ -1,19 +1,23 @@
 """Week 2 Compliance Matrix gate — the 8 mandatory DecodeLabs rows.
 
-Rows 1-3 (dataset loading, preprocessing scaling, shuffle/split) are
-implemented in Phases 16-17 and must pass. Rows 4-8 map to later phases
-(FR-187+) and are marked skipped until their pipeline stages land.
+Rows 1-5 (dataset loading, preprocessing scaling, shuffle/split, KNN
+workflow, model training) are implemented in Phases 16-18 and must pass.
+Rows 6-8 map to later phases (FR-196+) and are marked skipped until their
+pipeline stages land.
 """
 
 import logging
 
 import numpy as np
 import pytest
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier
 
 from decodebot.ml.dataset_loader import load_dataset, render_explore_report
 from decodebot.ml.dataset_validator import validate_dataset
 from decodebot.ml.preprocessor import preprocess_and_split
+from decodebot.ml.trainer import Trainer
 
 
 def test_row_1_load_and_understand_dataset(caplog):
@@ -98,14 +102,43 @@ def test_row_3_shuffle_and_split():
     assert np.array_equal(result.y_test, again.y_test)
 
 
-@pytest.mark.skip(reason="Phase 18: KNN INSTANTIATE -> FIT -> PREDICT — FR-187-FR-195")
 def test_row_4_knn_classification():
-    """Row 4: KNeighborsClassifier follows the official workflow."""
+    """Row 4: KNeighborsClassifier follows the official workflow.
+
+    Maps to FR-187-FR-189 / TC-ML-029..034.
+    """
+    dataset = load_dataset("iris", use_cache=False)
+    split = preprocess_and_split(dataset, random_state=42)
+    result = Trainer(classifier_type="knn", knn_k=5, random_state=42).train(
+        split.X_train, split.y_train
+    )
+
+    assert isinstance(result.model, KNeighborsClassifier)
+    assert result.model.get_params()["n_neighbors"] == 5
+    assert list(result.model.classes_) == [0, 1, 2]
+    predictions = result.model.predict(split.X_test)
+    assert predictions.shape == (30,)
+    assert set(predictions.tolist()).issubset({0, 1, 2})
 
 
-@pytest.mark.skip(reason="Phase 18: model.fit(X_train, y_train) — FR-189, FR-191")
 def test_row_5_train_model():
-    """Row 5: training completes and the model is retrievable."""
+    """Row 5: training completes and the model is retrievable.
+
+    Maps to FR-189, FR-191, FR-195 / TC-ML-035..038.
+    """
+    dataset = load_dataset("iris", use_cache=False)
+    split = preprocess_and_split(dataset, random_state=42)
+    result = Trainer(classifier_type="knn", knn_k=5, random_state=42).train(
+        split.X_train, split.y_train
+    )
+
+    assert result.model.predict(split.X_train[:1]).shape == (1,)
+    assert result.duration_ms >= 0.0
+
+    swapped = Trainer(classifier_type="decision_tree", random_state=42).train(
+        split.X_train, split.y_train
+    )
+    assert isinstance(swapped.model, DecisionTreeClassifier)
 
 
 @pytest.mark.skip(reason="Phase 19: predictions on the test set — FR-196-FR-200")
