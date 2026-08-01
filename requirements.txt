@@ -1,0 +1,8 @@
+# Chatbot Engine dependencies (Week 1) — stdlib only; none required.
+
+# Machine Learning Engine dependencies (Week 2) — not required by the Chatbot Engine (FR-230).
+scikit-learn>=1.3
+pandas>=2.0
+numpy>=1.24
+matplotlib>=3.7
+joblib>=1.3

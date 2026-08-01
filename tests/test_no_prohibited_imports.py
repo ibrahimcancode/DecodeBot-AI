@@ -2,6 +2,12 @@
 
 Scans all Python files in the project for prohibited
 ML/DL/NLP/LLM packages. Fails the build if any are found.
+
+Note (Phase 16): `sklearn` was removed from this list because the ML Engine
+(Week 2) is permitted to use it inside `decodebot/ml/` and its dedicated
+tests. The boundary — zero `sklearn`/`pandas`/`numpy`/`matplotlib`/`joblib`
+outside the ML package — is enforced by `tests/test_ml_isolation.py`
+(FR-229, NFR-072).
 """
 
 import ast
@@ -21,7 +27,6 @@ PROHIBITED_IMPORTS: list[str] = [
     "google.generativeai",
     "huggingface",
     "sentence_transformers",
-    "sklearn",
     "keras",
     "jax",
     "pytorch_lightning",
