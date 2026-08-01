@@ -113,6 +113,8 @@ def test_ml_package_modules_are_discoverable():
         "dataset_validator",
         "preprocessor",
         "trainer",
+        "predictor",
+        "evaluator",
     ):
         assert os.path.isfile(
             os.path.join(ML_DIR, module_name + ".py")

@@ -2,8 +2,9 @@
 
 Rows 1-5 (dataset loading, preprocessing scaling, shuffle/split, KNN
 workflow, model training) are implemented in Phases 16-18 and must pass.
-Rows 6-8 map to later phases (FR-196+) and are marked skipped until their
-pipeline stages land.
+Rows 6-7 (prediction, evaluation beyond accuracy) land in Phase 19. Row 8
+maps to later phases (full suite + gate) and is marked skipped until its
+pipeline stage lands.
 """
 
 import logging
@@ -16,6 +17,8 @@ from sklearn.tree import DecisionTreeClassifier
 
 from decodebot.ml.dataset_loader import load_dataset, render_explore_report
 from decodebot.ml.dataset_validator import validate_dataset
+from decodebot.ml.evaluator import evaluate
+from decodebot.ml.predictor import Predictor
 from decodebot.ml.preprocessor import preprocess_and_split
 from decodebot.ml.trainer import Trainer
 
@@ -141,14 +144,58 @@ def test_row_5_train_model():
     assert isinstance(swapped.model, DecisionTreeClassifier)
 
 
-@pytest.mark.skip(reason="Phase 19: predictions on the test set — FR-196-FR-200")
 def test_row_6_predictions_on_test_set():
-    """Row 6: model.predict(X_test) returns valid-length class labels."""
+    """Row 6: batch + single-sample prediction (FR-196-FR-200).
+
+    Maps to TC-ML-039..044 / Phase 19 DoD.
+    """
+    dataset = load_dataset("iris", use_cache=False)
+    split = preprocess_and_split(dataset, random_state=42)
+    training = Trainer(classifier_type="knn", knn_k=5, random_state=42).train(
+        split.X_train, split.y_train
+    )
+
+    predictor = Predictor(
+        class_names=dataset.target_names,
+        preprocessor=split.preprocessor,
+    )
+    predictions = predictor.predict(training.model, split.X_test)
+    assert len(predictions) == 30
+    assert set(predictions) == {"setosa", "versicolor", "virginica"}
+
+    assert predictor.predict_one(training.model, [5.1, 3.5, 1.4, 0.2]) == "setosa"
 
 
-@pytest.mark.skip(reason="Phase 19: evaluation beyond accuracy — FR-201-FR-209")
 def test_row_7_evaluate_beyond_accuracy():
-    """Row 7: confusion matrix, precision, recall, F1 computed and reported."""
+    """Row 7: confusion matrix, precision, recall, F1 (FR-201-FR-209).
+
+    Maps to TC-ML-045..058 / Phase 19 DoD — never accuracy alone (NFR-080).
+    """
+    dataset = load_dataset("iris", use_cache=False)
+    split = preprocess_and_split(dataset, random_state=42)
+    training = Trainer(classifier_type="knn", knn_k=5, random_state=42).train(
+        split.X_train, split.y_train
+    )
+
+    report = evaluate(
+        training.model,
+        split.X_test,
+        split.y_test,
+        class_names=dataset.target_names,
+    )
+    assert report.accuracy >= 0.85
+    assert report.confusion_matrix.shape == (3, 3)
+    assert int(report.confusion_matrix.sum()) == 30
+    assert set(report.precision) == {"setosa", "versicolor", "virginica"}
+    assert set(report.recall) == {"setosa", "versicolor", "virginica"}
+    assert set(report.f1) == {"setosa", "versicolor", "virginica"}
+    assert 0.0 <= report.macro_f1 <= 1.0
+    assert report.accuracy_mirage_warning is None
+
+    text = report.render()
+    assert "Accuracy" in text
+    assert "Confusion Matrix" in text
+    assert "Macro average" in text
 
 
 @pytest.mark.skip(reason="Phase 22: full automated ML suite + gate — all of Category R")

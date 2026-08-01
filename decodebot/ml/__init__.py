@@ -16,6 +16,12 @@ Public API:
 - ``Trainer`` / ``train_pipeline()`` — model training (FR-187-FR-195) with
   ``TrainingResult``, ``TuneResult``, ``TrainRunReport``, and
   ``TrainingError``.
+- ``Predictor`` / ``render_prediction_table()`` — batch and single-sample
+  prediction (FR-196-FR-200) with ``SinglePrediction`` and
+  ``PredictorError``.
+- ``evaluate()`` / ``cross_validate()`` / ``dummy_baseline()`` — model
+  evaluation (FR-201-FR-209) with ``EvaluationReport``,
+  ``CrossValidationResult``, and ``EvaluationError``.
 """
 
 from .dataset import (
@@ -29,6 +35,20 @@ from .dataset import (
 )
 from .dataset_loader import load_dataset, render_explore_report
 from .dataset_validator import ValidationReport, validate_dataset
+from .evaluator import (
+    CrossValidationResult,
+    EvaluationError,
+    EvaluationReport,
+    cross_validate,
+    dummy_baseline,
+    evaluate,
+)
+from .predictor import (
+    Predictor,
+    PredictorError,
+    SinglePrediction,
+    render_prediction_table,
+)
 from .preprocessor import (
     PreprocessResult,
     PreprocessingError,
@@ -58,6 +78,16 @@ __all__ = [
     "render_explore_report",
     "ValidationReport",
     "validate_dataset",
+    "Predictor",
+    "PredictorError",
+    "SinglePrediction",
+    "render_prediction_table",
+    "CrossValidationResult",
+    "EvaluationError",
+    "EvaluationReport",
+    "cross_validate",
+    "dummy_baseline",
+    "evaluate",
     "Preprocessor",
     "PreprocessingError",
     "PreprocessingReport",
