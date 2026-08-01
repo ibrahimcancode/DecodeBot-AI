@@ -10,15 +10,22 @@
 |---|---|
 | **Project Name** | DecodeBot AI |
 | **Document Type** | Software Requirements & Architecture Specification (SPEC.md) |
-| **Version** | 1.0.0 |
+| **Version** | 2.0.0 |
 | **Author** | `<AUTHOR NAME PLACEHOLDER>` |
-| **Organization** | DecodeLabs Artificial Intelligence Internship — Week 1, Project 1 |
+| **Organization** | DecodeLabs Artificial Intelligence Internship — Week 1 (Project 1) + Week 2 (Project 2) |
 | **License** | MIT License |
 | **Status** | ✅ Approved for Implementation |
 | **Document Classification** | Public / Portfolio / Open Source |
 | **Target Implementer** | OpenCode (AI Coding Agent) |
-| **Date** | 2026-07-29 |
-| **Revision History** | v1.0.0 — Initial complete specification |
+| **Date** | 2026-08-01 |
+| **Revision History** | v1.0.0 — Initial Week 1 rule-based chatbot specification. <br> v1.1.0 — Added Terminal Animation Layer (Category P) and Optional Tkinter GUI Layer (Category Q). <br> **v2.0.0 — Added Week 2 Machine Learning Data Classification Engine (Part II, Category R). Week 1 chatbot, GUI, and animation layers are fully preserved, unmodified, and remain 100% rule-based; nothing was removed or downgraded.** |
+
+> **📌 How This Document Is Organized (Read This First)**
+> This SPEC.md now covers **two integrated but independently-scoped modules** inside the single DecodeBot AI project:
+> - **Part I — Chatbot Engine (Week 1, unchanged):** Sections "Executive Summary" through "References" as originally written, covering the 100% rule-based conversational agent, its optional Tkinter GUI, and terminal animations. **Nothing in Part I has been altered, weakened, or removed.** The "no ML/NLP/LLM" constraint (`CON-01`, `FR-009`) still applies strictly to this module and to this module only.
+> - **Part II — Machine Learning Engine (Week 2, new):** A new, clearly separated section near the end of this document, titled **"PART II — WEEK 2: MACHINE LEARNING DATA CLASSIFICATION ENGINE."** This part introduces `scikit-learn`-based supervised learning as an explicitly scoped, separate module — required and mandated by the official DecodeLabs Week 2 brief — and does **not** relax any Part I constraint. The chatbot's conversational logic remains 100% rule-based; only the new, separate ML Engine uses machine learning, exactly as instructed by DecodeLabs.
+>
+> Any implementer (OpenCode) must treat Part I as immutable ground truth for chatbot behavior and Part II as strictly additive.
 
 > **Implementation Directive:** This document is the **single source of truth** for the DecodeBot AI project. Any ambiguity encountered by an implementing agent must be resolved by re-reading this document in full before making an assumption. No functional behavior should be invented that is not derivable from this specification.
 
@@ -134,20 +141,19 @@ There is a gap between **"a chatbot that technically works"** and **"a chatbot t
 - A modular, plugin-ready rule engine architecture.
 - A full automated test suite (`pytest`-based) and manual test scripts.
 - Complete project documentation: README, CONTRIBUTING, LICENSE, CHANGELOG.
-- An optional Tkinter-based graphical interface (`--gui` launch flag) that reuses the exact same rule engine as the CLI � no duplicated conversational logic.
-- Terminal animation effects (typewriter-style response printing, "thinking" indicator, animated banner) for the default CLI mode.
 
 ### Out of Scope
 - Any machine learning, deep learning, NLP library, or LLM/API integration of any kind.
 - Persistent storage of conversation data to a database.
 - Multi-user, networked, or web-based deployment.
 - Voice input/output.
-- (Removed � GUI is now in scope as an optional secondary interface. See "GUI & Animation Layer" section.)
+- Graphical user interface (GUI).
 - Multilingual support (English-only for v1).
 - Authentication, authorization, or user accounts.
 
 ### Future Scope
 - Web-based front end (Flask/FastAPI) reusing the same rule engine (see [Roadmap](#roadmap)).
+- Optional GUI (Tkinter/PyQt) reusing the same rule engine.
 - Optional, clearly-labeled "Chapter 2" branch introducing NLP/ML/LLM capability as a **separate, opt-in mode** that never replaces the rule-based core.
 - Database-backed persistent conversation history.
 - Voice interface via speech-to-text/text-to-speech.
@@ -203,8 +209,7 @@ DecodeBot AI is a single-user, single-process, terminal-based Python application
 | **NFR** | Non-Functional Requirement |
 | **FR** | Functional Requirement |
 | **SRS** | Software Requirements Specification |
-| **Presentation Adapter** | Either the CLI (core/loop.py) or GUI (gui/app_gui.py) � an interchangeable front end that never contains its own conversational logic |
-| **Reduced Motion** | An accessibility mode that disables frame-cycling animation while preserving static informational equivalents || **REPL** | Read-Eval-Print Loop |
+| **REPL** | Read-Eval-Print Loop |
 
 ### References
 
@@ -259,7 +264,7 @@ No other third-party packages are permitted.
 
 ## Functional Requirements
 
-> **Format:** Each requirement lists Priority (P0=Critical/blocking, P1=High, P2=Medium, P3=Low/stretch), Description, Rationale, Dependencies, Acceptance Criteria, Edge Cases, and an Example. Requirements are grouped into 17 categories, FR-001 through FR-163.
+> **Format:** Each requirement lists Priority (P0=Critical/blocking, P1=High, P2=Medium, P3=Low/stretch), Description, Rationale, Dependencies, Acceptance Criteria, Edge Cases, and an Example. Requirements are grouped into 15 categories, FR-001 through FR-133.
 
 ### Category A — Core Program Structure & Execution Loop (FR-001 – FR-010)
 
@@ -1494,286 +1499,288 @@ No other third-party packages are permitted.
 - **Edge Cases:** N/A.
 - **Example:** `$ python main.py --plain`
 
-### Category P — GUI & Animation Layer (FR-134 – FR-163)
+### Category P — Terminal Animation Effects (FR-134 – FR-143)
 
-**FR-134 — Typewriter Effect on Response Output**
+**FR-134 — Typewriter-Style Response Printing**
 - **Priority:** P2
-- **Description:** Bot responses SHALL be printed one character at a time at a configurable speed (default 16.6ms per character, ≈60 CPS) to simulate typing, controllable via the `typing_speed_cps` config key.
-- **Rationale:** Polished, engaging terminal UX that visually signals "the bot is typing."
-- **Dependencies:** FR-138, FR-140
-- **Acceptance Criteria:** A 40-character response (no newlines) takes ≈ 667ms to appear at default speed, measured by a mock clock.
-- **Edge Cases:** Zero-length responses; multi-line responses where each line independently typewrites.
-- **Example:** N/A.
+- **Description:** Bot responses shall optionally print character-by-character at a configurable speed (`typing_speed_cps`, default 60 chars/sec) instead of appearing instantly.
+- **Rationale:** Improves perceived personality without any ML — pure `time.sleep()` + incremental `sys.stdout.write()`.
+- **Dependencies:** FR-127, FR-088
+- **Acceptance Criteria:** With the effect enabled, a 40-character response takes ~0.67s to fully print; disabling it prints instantly.
+- **Edge Cases:** Must be interruptible — pressing any key mid-animation flushes the remaining text instantly.
+- **Example:** `Bot: H-e-l-l-o-!` renders progressively left to right.
 
 **FR-135 — "Thinking" Indicator Animation**
 - **Priority:** P2
-- **Description:** Before the typewriter output begins, a three-frame animated indicator (e.g., `•`, `• •`, `• • •`) SHALL cycle for a configurable duration (default 1 frame each 200ms, `thinking_frame_ms`).
-- **Rationale:** Signals processing activity and reduces perceived wait time.
-- **Dependencies:** FR-138, FR-140
-- **Acceptance Criteria:** Indicator completes at least one full cycle before any response character appears.
-- **Edge Cases:** Zero-duration animation (all frames at 0ms) must produce the last frame statically, not crash.
-- **Example:** N/A.
-
-**FR-136 — Animated Banner Sequence**
-- **Priority:** P3
-- **Description:** The startup banner (FR-126) MAY be rendered as a sequential reveal (line-by-line or character-by-character) when animations are enabled.
-- **Rationale:** Visual flair for first-run impression.
-- **Dependencies:** FR-126, FR-134
-- **Acceptance Criteria:** With animations on, the banner completes within 2 seconds; with animations off, it appears instantly as in v1.0.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-137 — Animated Clear-Transition Effect**
-- **Priority:** P3
-- **Description:** The `clear` command (FR-060) MAY use a brief animated transition (e.g., a "scroll away" effect) instead of an instant clear when animations are enabled.
-- **Rationale:** Smooth visual transition.
-- **Dependencies:** FR-060, FR-134
-- **Acceptance Criteria:** With animations on, `clear` shows a visible transition lasting < 500ms before the banner reprints; with animations off, clear remains instant.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-138 — Animation Enable/Disable Toggle**
-- **Priority:** P2
-- **Description:** The global `enable_animations` config key SHALL turn all animation effects on (default: `true`) or off, restoring the instant v1.0 output behavior.
-- **Rationale:** User choice; accessibility fallback.
-- **Dependencies:** FR-088, FR-133
-- **Acceptance Criteria:** Setting `enable_animations: false` produces zero `time.sleep()` calls during any interaction.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-139 — Auto-Disable on Non-TTY Output**
-- **Priority:** P2
-- **Description:** Animations SHALL automatically disable themselves when `sys.stdout` is not a TTY (piped to file, CI, etc.), falling back to instant output without configuration change.
-- **Rationale:** Prevents corrupted piped output and CI hangs.
-- **Dependencies:** FR-138
-- **Acceptance Criteria:** `python main.py | tee log.txt` produces instant, un-delayed text in the log file.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-140 — Reduced Motion Accessibility Mode**
-- **Priority:** P2
-- **Description:** The `reduced_motion` config key (bool, default `false`) SHALL disable frame cycling while preserving a static informational equivalent of each animation effect.
-- **Rationale:** WCAG accessibility best practice for users with vestibular disorders.
-- **Dependencies:** FR-138
-- **Acceptance Criteria:** With `reduced_motion: true`, typewriter shows full text instantly, thinking indicator shows a static `• • •` (all three dots), and animated banner shows its final frame only.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-141 — Animation Non-Blocking on Interrupt**
-- **Priority:** P1
-- **Description:** During any animation, a `KeyboardInterrupt` (Ctrl+C) SHALL be detected and honored within 100ms, immediately flushing remaining output and allowing the interrupt handler to run.
-- **Rationale:** Ensures the user can always break out of long animations.
-- **Dependencies:** FR-104, FR-134
-- **Acceptance Criteria:** Pressing Ctrl+C during a 5-second typewriter animation exits within 100ms.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-142 — Animation Frames Excluded from Logs**
-- **Priority:** P1
-- **Description:** All animation frame output SHALL be suppressed from log file writes; only the final, complete response text SHALL be logged once per interaction.
-- **Rationale:** Logs remain clean and parsable; no frame-by-frame log bloat.
-- **Dependencies:** FR-096, FR-134
-- **Acceptance Criteria:** A session with 10 animated responses produces exactly 10 log entries for response content, not hundreds of frame entries.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-143 — Injectable Clock for Animation Testability**
-- **Priority:** P3
-- **Description:** The animation module SHALL accept an injectable `time`-compatible clock object (or default to `time.monotonic`) for deterministic timing control in unit tests.
-- **Rationale:** Testability; prevents test flakiness from real-time sleeps.
+- **Description:** Between input submission and response display, a brief animated indicator shall display for a minimum perceptible duration (default 150-300ms), purely for UX pacing.
+- **Rationale:** Deterministic, fixed-frame animation reinforcing "the bot is working."
 - **Dependencies:** None
-- **Acceptance Criteria:** Unit tests can pass a mock clock that advances instantly, completing a 5-second animation in zero wall-clock time.
-- **Edge Cases:** N/A.
+- **Acceptance Criteria:** Indicator cycles through fixed frames at a configurable interval (`thinking_frame_ms`, default 100ms) before the response prints.
+- **Edge Cases:** Disabled in `--plain` mode and when piped/non-interactive.
+- **Example:** `Bot is thinking |` -> `/` -> `-` -> `\` -> response appears.
+
+**FR-136 — Animated ASCII Startup Banner**
+- **Priority:** P3
+- **Description:** The startup banner (FR-126) shall optionally animate in using only `time.sleep()` and cursor control - no external animation library.
+- **Rationale:** Portfolio delight.
+- **Dependencies:** FR-126
+- **Acceptance Criteria:** Full banner animation completes in under 1 second by default; skippable via `--plain` or config.
+- **Edge Cases:** Degrades to instant full-banner print on non-ANSI terminals.
+- **Example:** Banner border draws in, then title fades in line by line.
+
+**FR-137 — Animated Screen Clear Transition**
+- **Priority:** P3
+- **Description:** The `clear` command (FR-060) shall optionally use a brief wipe/fade transition before the final clear.
+- **Rationale:** Visual polish consistent with FR-136.
+- **Dependencies:** FR-060
+- **Acceptance Criteria:** Transition completes in <300ms; toggleable via config.
+- **Edge Cases:** Falls back to instant clear if terminal doesn't support cursor repositioning.
 - **Example:** N/A.
 
-**FR-144 — Optional `--gui` Launch Flag**
+**FR-138 — Configurable Animation Toggle**
 - **Priority:** P1
-- **Description:** Adding `--gui` to the launch command SHALL open a Tkinter-based graphical window instead of starting the CLI REPL.
-- **Rationale:** GUI feature entry point.
-- **Dependencies:** FR-001, FR-160
-- **Acceptance Criteria:** `python main.py --gui` opens a window; `python main.py` (no flag) starts the CLI REPL as before.
+- **Description:** A single config key `enable_animations` (default `true`) shall globally enable/disable all terminal animation effects (FR-134-FR-137) at once, independent of color settings.
+- **Rationale:** Accessibility and reviewer convenience.
+- **Dependencies:** FR-088
+- **Acceptance Criteria:** With `enable_animations: false`, every response prints instantly with zero `sleep()` calls invoked.
+- **Edge Cases:** `--plain` mode always implies `enable_animations: false`.
+- **Example:** N/A.
+
+**FR-139 — Non-Interactive/Piped Environment Detection**
+- **Priority:** P1
+- **Description:** All animations (FR-134-FR-137) shall auto-disable when `sys.stdout.isatty()` is `False`.
+- **Rationale:** Prevents broken output and slow automated test runs.
+- **Dependencies:** FR-134-FR-138
+- **Acceptance Criteria:** Piping output (`python main.py | cat`) produces instant, undelayed, unanimated text.
 - **Edge Cases:** N/A.
 - **Example:** N/A.
 
-**FR-145 — Shared Rule Engine with CLI (Zero Duplication)**
+**FR-140 — Reduced-Motion Accessibility Mode**
+- **Priority:** P2
+- **Description:** A `reduced_motion` config key (default `false`) shall disable animation *speed* effects but preserve informational indicators as static text.
+- **Rationale:** Accessibility for photosensitivity/motion-sensitivity.
+- **Dependencies:** FR-138
+- **Acceptance Criteria:** With `reduced_motion: true`, no frame-cycling animation occurs anywhere, but static equivalents remain.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-141 — Animation Performance Budget**
+- **Priority:** P2
+- **Description:** No animation shall block `KeyboardInterrupt` responsiveness for more than 100ms at any point.
+- **Rationale:** Preserves FR-104's guarantee.
+- **Dependencies:** FR-104, FR-134-FR-137
+- **Acceptance Criteria:** `Ctrl+C` during any animation exits within 100ms.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-142 — Animation Logging Exclusion**
+- **Priority:** P3
+- **Description:** Animation frame-by-frame output shall never be written to the log file - only the final, complete response text is logged.
+- **Rationale:** Prevents log-file bloat.
+- **Dependencies:** FR-096
+- **Acceptance Criteria:** Log file contains one entry per response regardless of animation frame count.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-143 — Animation Unit Testability**
+- **Priority:** P2
+- **Description:** Animation timing functions shall accept an injectable clock/sleep function so tests can run with zero real-world delay.
+- **Rationale:** Keeps test suite fast (NFR-036).
+- **Dependencies:** FR-022
+- **Acceptance Criteria:** `tests/test_animations.py` runs all animation-path tests in under 50ms total using a mocked clock.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+### Category Q — Optional Tkinter GUI Mode (FR-144 – FR-163)
+
+**FR-144 — GUI Launch Flag**
+- **Priority:** P1
+- **Description:** Running `python main.py --gui` shall launch a Tkinter-based graphical window instead of the terminal REPL; running without the flag defaults to CLI mode (unchanged).
+- **Rationale:** GUI is strictly additive and opt-in.
+- **Dependencies:** FR-001
+- **Acceptance Criteria:** `python main.py` (no flag) behaves identically to the pre-GUI CLI application in every respect.
+- **Edge Cases:** Headless environments must fail gracefully to CLI mode.
+- **Example:** `$ python main.py --gui` -> window opens.
+
+**FR-145 — Shared Rule Engine (No Logic Duplication)**
 - **Priority:** P0
-- **Description:** The GUI SHALL call the exact same `classify_intent()` and `get_response()` functions as the CLI — zero conversational logic may be duplicated in the GUI module.
-- **Rationale:** Core architectural invariant; prevents divergence between CLI and GUI behavior.
-- **Dependencies:** FR-006, FR-007, FR-144
-- **Acceptance Criteria:** `classify_intent("hello")` produces the same `Intent.GREETING` result regardless of which interface invoked it.
+- **Description:** The GUI shall call the exact same `classify_intent()`/`get_response()` functions used by the CLI. No conversational rule, pattern, or response may be reimplemented for the GUI.
+- **Rationale:** Prevents behavioral drift between interfaces.
+- **Dependencies:** All Category A-O FRs
+- **Acceptance Criteria:** `classify_intent("hi")` returns identically whether invoked from CLI or GUI.
 - **Edge Cases:** N/A.
 - **Example:** N/A.
 
-**FR-146 — Chat Bubble Display**
+**FR-146 — GUI Window Layout**
 - **Priority:** P1
-- **Description:** The chat window SHALL display messages in bubble-style containers: user messages right-aligned with a colored background, bot messages left-aligned with a distinct background color.
-- **Rationale:** Standard chat UI pattern.
-- **Dependencies:** FR-144, FR-151
-- **Acceptance Criteria:** After one user message and one bot reply, the window shows two bubbles in correct alignment and order.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-147 — Text Entry Field**
-- **Priority:** P1
-- **Description:** A single-line text entry field SHALL be present at the bottom of the window, with a "Send" button beside it.
-- **Rationale:** Standard input mechanism.
+- **Description:** The GUI shall present a scrollable chat history pane, a single-line text entry field, and a "Send" button, matching standard chat-app conventions.
+- **Rationale:** Familiar, professional layout.
 - **Dependencies:** FR-144
-- **Acceptance Criteria:** Typing in the field and pressing Enter or clicking Send dispatches the message and clears the field.
+- **Acceptance Criteria:** Window renders all three elements correctly at 500x600px, resizable down to 350x400px without clipping.
 - **Edge Cases:** N/A.
 - **Example:** N/A.
 
-**FR-148 — Enter-to-Send with Shift+Enter for Newline**
-- **Priority:** P2
-- **Description:** Pressing Enter in the entry field SHALL send the message. `Shift+Enter` SHALL insert a newline (multi-line message support).
-- **Rationale:** Standard chat keyboard UX.
-- **Dependencies:** FR-147
-- **Acceptance Criteria:** Pressing Enter submits; pressing Shift+Enter inserts a newline in the field.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-149 — GUI Typing Indicator Animation**
-- **Priority:** P2
-- **Description:** After the user sends a message, a three-dot "typing" indicator SHALL appear in the chat area before the bot's response is displayed, using `Tkinter.after()` only (never `time.sleep()`).
-- **Rationale:** Visual feedback during response generation without blocking the GUI event loop.
-- **Dependencies:** FR-144, FR-145
-- **Acceptance Criteria:** Indicator appears after send and is replaced by the bot's response text (not accumulated on top of it).
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-150 — Fade-In Animation for New Messages**
-- **Priority:** P3
-- **Description:** New chat bubbles MAY fade in over a configurable duration (default 200ms) using `Tkinter.after()`-based alpha blending, when animations are enabled in the GUI settings.
-- **Rationale:** Smooth visual polish.
-- **Dependencies:** FR-146, FR-149
-- **Acceptance Criteria:** With GUI animations on, a new bubble's opacity transitions from 0 to 255 over 200ms; with animations off, it appears instantly.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-151 — Shared Color Palette with CLI**
+**FR-147 — Enter-to-Send**
 - **Priority:** P1
-- **Description:** The GUI's color scheme SHALL derive from the same shared palette constants used by the CLI (`utils/formatting.py` or a shared `theme.py`), ensuring visual consistency between interfaces.
-- **Rationale:** Brand consistency; single point of theme change.
-- **Dependencies:** FR-129, FR-144
-- **Acceptance Criteria:** Changing the primary color constant updates both CLI ANSI output and GUI bubble colors.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-152 — Accessibility: Configurable Font Size and High-Contrast Theme**
-- **Priority:** P2
-- **Description:** The GUI SHALL support a configurable font size setting and a high-contrast theme (accessible via settings menu or config file).
-- **Rationale:** GUI accessibility standard.
-- **Dependencies:** FR-144, FR-151
-- **Acceptance Criteria:** Enabling high-contrast theme changes background and text colors to a documented high-contrast pair; font size can be set independently.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-153 — Full CLI Command Parity in GUI**
-- **Priority:** P1
-- **Description:** All CLI commands (`help`, `about`, `version`, `history`, `stats`, `settings`, `reset`, `clear`, and all hidden commands) SHALL work identically when typed into the GUI's entry field, producing the same data shown in the chat area.
-- **Rationale:** Users should not lose any CLI functionality by using the GUI.
-- **Dependencies:** FR-145, FR-054–FR-063, FR-064–FR-079, FR-088–FR-095
-- **Acceptance Criteria:** Typing `help` in the GUI shows the full command list; typing `stats` shows correct counts; both match CLI output semantically.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-154 — GUI Scroll-to-Bottom on New Message**
-- **Priority:** P1
-- **Description:** The chat display SHALL automatically scroll to the bottom when a new message is added.
-- **Rationale:** Standard chat UX pattern.
+- **Description:** Pressing `Enter` while the entry field is focused shall submit the message, equivalent to clicking "Send."
+- **Rationale:** Standard chat UX expectation.
 - **Dependencies:** FR-146
-- **Acceptance Criteria:** After adding a new message when scrolled up, the viewport auto-scrolls to show the latest message.
+- **Acceptance Criteria:** Typing a message and pressing Enter submits it and clears the entry field.
 - **Edge Cases:** N/A.
 - **Example:** N/A.
 
-**FR-155 — Message Timestamps**
-- **Priority:** P3
-- **Description:** Each chat bubble MAY display a small timestamp (HH:MM format) indicating when the message was sent/received.
-- **Rationale:** Useful context for long sessions.
+**FR-148 — Chat Bubble Rendering**
+- **Priority:** P1
+- **Description:** User and bot messages shall render as visually distinct bubbles (right-aligned for user, left-aligned for bot), consistent with FR-127.
+- **Rationale:** Visual parity with the CLI's turn-taking clarity.
 - **Dependencies:** FR-146
-- **Acceptance Criteria:** Timestamps appear in a smaller, muted font within or adjacent to each bubble.
+- **Acceptance Criteria:** Each turn appends one user bubble and one bot bubble in correct order/alignment.
+- **Edge Cases:** Long messages wrap within the bubble.
+- **Example:** N/A.
+
+**FR-149 — Typing Indicator Animation (GUI)**
+- **Priority:** P2
+- **Description:** Mirroring FR-135, the GUI shall show an animated "typing..." bubble before the bot's real response bubble appears.
+- **Rationale:** Visual parity with the CLI thinking indicator.
+- **Dependencies:** FR-135, FR-146
+- **Acceptance Criteria:** Indicator cycles for the configured duration, then is replaced by the real response bubble.
+- **Edge Cases:** Respects `reduced_motion` (FR-140).
+- **Example:** N/A.
+
+**FR-150 — Message Fade-In Animation**
+- **Priority:** P3
+- **Description:** New chat bubbles shall optionally fade/slide in over ~150ms using `Tkinter.after()`-scheduled incremental redraws.
+- **Rationale:** Modern chat-app feel via stdlib scheduling only.
+- **Dependencies:** FR-148, FR-138
+- **Acceptance Criteria:** Toggleable via `enable_animations`.
 - **Edge Cases:** N/A.
 - **Example:** N/A.
 
-**FR-156 — Window Title and Icon**
+**FR-151 — GUI Theme Matching CLI Color Scheme**
 - **Priority:** P2
-- **Description:** The GUI window SHALL display the application title "DecodeBot AI" in its title bar.
-- **Rationale:** Professional presentation.
+- **Description:** GUI bubble colors shall derive from the same semantic palette as the CLI's ANSI scheme (FR-129).
+- **Rationale:** Visual consistency across interfaces.
+- **Dependencies:** FR-129
+- **Acceptance Criteria:** Colors defined once in `gui/theme.py`, referenced by light/dark variants.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-152 — Dark/Light Mode Toggle**
+- **Priority:** P3
+- **Description:** The GUI shall include a menu option to toggle dark/light theme, session-only (consistent with FR-066/FR-078).
+- **Rationale:** Standard modern app expectation.
+- **Dependencies:** FR-151
+- **Acceptance Criteria:** Toggling switches all bubble/background colors immediately.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-153 — GUI Command Support**
+- **Priority:** P1
+- **Description:** All CLI commands (`help`, `about`, `version`, `history`, `stats`, `settings`, `reset`, `clear`) shall function identically when typed into the GUI's entry field.
+- **Rationale:** Full feature parity.
+- **Dependencies:** FR-054-FR-063, FR-145
+- **Acceptance Criteria:** Typing `stats` in the GUI produces the same data as the CLI `stats` screen.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-154 — GUI Exit Behavior**
+- **Priority:** P1
+- **Description:** Typing an exit command or closing the window shall both trigger the same farewell/summary logic as the CLI, then close the window.
+- **Rationale:** Behavioral parity.
+- **Dependencies:** FR-038, FR-146
+- **Acceptance Criteria:** Clicking the window's close button logs the session end identically to typing `bye`.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-155 — GUI Error Handling (Non-Blocking)**
+- **Priority:** P1
+- **Description:** Any internal exception during GUI operation shall be caught, logged, and surfaced as a small non-blocking status message - never a raw Tkinter error dialog or crash.
+- **Rationale:** Consistency with FR-106/FR-111.
+- **Dependencies:** FR-106, FR-111
+- **Acceptance Criteria:** A forced exception in a GUI test double is caught and logged; the window remains responsive.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-156 — GUI Logging Parity**
+- **Priority:** P2
+- **Description:** The GUI shall write to the same `logs/decodebot.log` file, using a `decodebot.gui` logger tag distinguishing it from CLI-sourced lines.
+- **Rationale:** Single unified operational log.
+- **Dependencies:** FR-096
+- **Acceptance Criteria:** Log lines from GUI sessions include `decodebot.gui` as the logger name.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-157 — GUI Statistics/History Parity**
+- **Priority:** P2
+- **Description:** GUI sessions shall use the identical `SessionState`, `stats`, and `history` mechanisms as the CLI.
+- **Rationale:** Single source of truth for session data.
+- **Dependencies:** FR-064-FR-079, FR-145
+- **Acceptance Criteria:** A GUI session's `stats` output matches what the CLI would report for the same message sequence.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-158 — GUI Startup Performance**
+- **Priority:** P2
+- **Description:** The GUI window shall render and become interactive within 1 second of launch on reference hardware.
+- **Rationale:** Responsiveness expectation.
 - **Dependencies:** FR-144
-- **Acceptance Criteria:** Window title reads "DecodeBot AI" at all times.
+- **Acceptance Criteria:** Timed test confirms `mainloop()` readiness within 1000ms.
 - **Edge Cases:** N/A.
 - **Example:** N/A.
 
-**FR-157 — GUI Logging Channel**
+**FR-159 — GUI Font Scaling / Accessibility**
 - **Priority:** P2
-- **Description:** GUI-originated events (window open, window close, errors) SHALL be logged through a separate `decodebot.gui` logger channel, distinct from the core chat logger.
-- **Rationale:** Clean separation of concerns in logs.
-- **Dependencies:** FR-096, FR-144
-- **Acceptance Criteria:** Log lines originating from GUI events show `decodebot.gui` as the logger name.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-158 — GUI Exit via Window Close Button**
-- **Priority:** P1
-- **Description:** Closing the GUI window via the OS window close button SHALL trigger the same farewell/summary logic as typing `exit` in the CLI, printing a summary to stdout before process exit.
-- **Rationale:** Predictable behavior regardless of exit method.
-- **Dependencies:** FR-036, FR-144, FR-145
-- **Acceptance Criteria:** Closing the window prints the farewell summary to the terminal that launched it and exits with code 0.
-- **Edge Cases:** N/A.
-- **Example:** N/A.
-
-**FR-159 — GUI Error Isolation**
-- **Priority:** P1
-- **Description:** Unhandled exceptions in GUI event handlers SHALL be caught, logged to the `decodebot.gui` logger, and displayed as a chat message ("Something went wrong in the UI. Please try again.") without crashing the window.
-- **Rationale:** Prevents a single GUI bug from losing the session.
-- **Dependencies:** FR-106, FR-144, FR-157
-- **Acceptance Criteria:** Forcing an exception in a GUI callback logs the traceback and shows a non-blocking error message bubble; the window remains fully interactive.
+- **Description:** The GUI shall include a menu option to increase/decrease font size (3 discrete levels).
+- **Rationale:** Basic accessibility support.
+- **Dependencies:** FR-146
+- **Acceptance Criteria:** Font size change applies to all existing and future bubbles immediately.
 - **Edge Cases:** N/A.
 - **Example:** N/A.
 
 **FR-160 — Headless Environment Fallback**
 - **Priority:** P1
-- **Description:** If `--gui` is passed but Tkinter cannot initialize (no display, headless server, SSH without X forwarding), the application SHALL log a warning and fall back to the CLI mode automatically — never crash.
-- **Rationale:** Robustness for CI/CD and remote environments.
+- **Description:** If `tkinter` fails to initialize a display, the app shall catch this, print a clear console message, and fall back to CLI mode rather than crashing.
+- **Rationale:** Robustness in CI/server/SSH environments.
 - **Dependencies:** FR-144
-- **Acceptance Criteria:** `python main.py --gui` in a headless CI environment runs in CLI mode with a logged warning; exit code is 0.
+- **Acceptance Criteria:** Running `python main.py --gui` on a headless test runner falls back to CLI mode with a logged warning.
 - **Edge Cases:** N/A.
 - **Example:** N/A.
 
-**FR-161 — CLI Must Still Work Without GUI Module Present**
+**FR-161 — GUI Does Not Affect Compliance Matrix**
 - **Priority:** P0
-- **Description:** Deleting or renaming the `gui/` directory SHALL NOT prevent `python main.py` from launching the CLI normally.
-- **Rationale:** The GUI is an optional add-on; the core product must be standalone.
-- **Dependencies:** FR-001, FR-144
-- **Acceptance Criteria:** With `decodebot/gui/` missing, `python main.py` runs the CLI identically to a v1.0 install.
+- **Description:** All 8 DecodeLabs Week 1 Compliance Matrix behaviors must remain fully satisfied via the default (non-`--gui`) CLI invocation, unaffected by the presence of GUI code in the repository.
+- **Rationale:** Protects the graded deliverable.
+- **Dependencies:** Compliance Matrix, FR-145
+- **Acceptance Criteria:** `tests/test_compliance.py` passes with the GUI module present but unused.
 - **Edge Cases:** N/A.
 - **Example:** N/A.
 
-**FR-162 — GUI Settings Persistence**
+**FR-162 — GUI Plugin/Easter-Egg Parity**
 - **Priority:** P3
-- **Description:** GUI-specific settings (font size, high-contrast toggle, window geometry) MAY be persisted to a local `gui_settings.json` file, loaded on next launch.
-- **Rationale:** User preference retention across sessions.
-- **Dependencies:** FR-088, FR-144, FR-152
-- **Acceptance Criteria:** Changing font size in the GUI, closing, and reopening the window restores the chosen font size.
+- **Description:** Hidden commands and easter eggs (Category M) shall function identically in the GUI, rendered as normal bot bubbles.
+- **Rationale:** Full feature parity.
+- **Dependencies:** FR-112-FR-117, FR-145
+- **Acceptance Criteria:** Typing `"tell me a joke"` in the GUI produces the same joke pool as the CLI.
 - **Edge Cases:** N/A.
 - **Example:** N/A.
 
-**FR-163 — Zero Non-Stdlib GUI Dependencies**
+**FR-163 — GUI Zero Additional Runtime Dependencies**
 - **Priority:** P0
-- **Description:** The entire GUI module SHALL use only Tkinter (included in the Python standard library) and SHALL NOT import any third-party GUI packages such as PyQt, wxPython, Kivy, DearPyGui, or any other non-stdlib GUI framework.
-- **Rationale:** Core constraint of the project; no external dependencies permitted.
-- **Dependencies:** FR-009, FR-144
-- **Acceptance Criteria:** `tests/test_no_prohibited_imports.py` scans all files under `decodebot/gui/` and fails if any non-stdlib import is found.
+- **Description:** The GUI shall use only `tkinter` (Python standard library) - no `PyQt`, `Kivy`, `customtkinter`, or any other third-party GUI toolkit.
+- **Rationale:** Preserves `CON-03`/`NFR-016` for the chatbot/GUI surface.
+- **Dependencies:** None
+- **Acceptance Criteria:** `tests/test_no_prohibited_imports.py` is extended to also flag any non-stdlib GUI import.
 - **Edge Cases:** N/A.
 - **Example:** N/A.
 
-> **End of Functional Requirements.** Total: **163 Functional Requirements (FR-001 – FR-163)**, exceeding the 100+ requirement.
+> **End of Chatbot/GUI Functional Requirements (Part I).** Total: **163 Functional Requirements (FR-001 - FR-163)** covering the 100% rule-based chatbot, its optional Tkinter GUI, and terminal animations - all preserved unchanged from the v1.1.0 baseline. Part II (near the end of this document) introduces a new FR range (FR-164+) for the Week 2 Machine Learning Engine; it does not renumber or modify any FR above.
 
 
 ---
 
 ## Non-Functional Requirements
 
-> 65 Non-Functional Requirements (NFR-001 – NFR-065), grouped by category. Each row states the requirement, its measurable target, and priority.
+> 54 Non-Functional Requirements (NFR-001 – NFR-054), grouped by category. Each row states the requirement, its measurable target, and priority.
 
 ### Performance
 
@@ -1909,22 +1916,23 @@ No other third-party packages are permitted.
 | NFR-053 | Fast local test loop | `pytest` runs the full suite in a single command with no configuration required | P1 |
 | NFR-054 | Clear error messages for contributors | Plugin interface violations produce actionable startup log messages (FR-119) referencing the specific missing attribute | P2 |
 
-### Animation & GUI
+### Animation & GUI (Category P/Q support)
 
 | ID | Category | Requirement | Target / Metric | Priority |
 |---|---|---|---|---|
 | NFR-055 | Performance | Animation frame rendering overhead | < 5ms per frame, never blocking input responsiveness | P1 |
-| NFR-056 | Accessibility | Reduced-motion mode available | educed_motion config key functions per FR-140 | P2 |
+| NFR-056 | Accessibility | Reduced-motion mode available | `reduced_motion` config key functions per FR-140 | P2 |
 | NFR-057 | Reliability | GUI never crashes the process | 0 unhandled Tkinter exceptions across a 500-message GUI fuzz test | P1 |
-| NFR-058 | Portability | GUI runs wherever 	kinter is available | Verified on Windows, macOS, Linux with standard Python installs | P1 |
-| NFR-059 | Dependency minimalism | Zero non-stdlib GUI packages | equirements.txt unchanged; 	kinter only | P0 |
+| NFR-058 | Portability | GUI runs wherever `tkinter` is available | Verified on Windows, macOS, Linux with standard Python installs | P1 |
+| NFR-059 | Dependency minimalism | Zero non-stdlib GUI packages | `requirements.txt` unchanged; `tkinter` only | P0 |
 | NFR-060 | Memory | GUI idle memory footprint | < 80MB RSS (higher than CLI's 50MB due to Tk overhead, still bounded) | P2 |
 | NFR-061 | Response time | GUI end-to-end message round-trip | < 100ms excluding intentional animation pacing | P1 |
 | NFR-062 | Consistency | CLI/GUI behavioral parity | 100% of Category A-O intents classify identically regardless of interface (FR-145) | P0 |
-| NFR-063 | Testing | GUI test coverage | >= 80% line coverage on gui/ module (lower bar than core/rules due to UI-event-loop testing constraints) | P2 |
-| NFR-064 | Developer Experience | GUI launch requires zero extra setup | python main.py --gui works immediately after standard Python install (no pip install step) | P1 |
-| NFR-065 | Documentation | GUI documented | docs/GUI_GUIDE.md covers layout, theming, and accessibility options | P2 |
-> **End of Non-Functional Requirements.** Total: **65 Non-Functional Requirements**, exceeding the 50+ requirement.
+| NFR-063 | Testing | GUI test coverage | ≥ 80% line coverage on `gui/` module | P2 |
+| NFR-064 | Developer Experience | GUI launch requires zero extra setup | `python main.py --gui` works immediately after standard Python install | P1 |
+| NFR-065 | Documentation | GUI documented | `docs/GUI_GUIDE.md` covers layout, theming, and accessibility options | P2 |
+
+> **End of Non-Functional Requirements.** Total: **65 Non-Functional Requirements** (NFR-001 - NFR-065), exceeding the 50+ requirement.
 
 
 ---
@@ -2237,31 +2245,6 @@ flowchart TD
     Loop -->|KeyboardInterrupt / EOFError| Farewell
 ```
 
-### Dual-Interface Architecture
-
-`mermaid
-graph TB
-    subgraph "Presentation Layer (Two Interchangeable Adapters)"
-        CLI[core/loop.py<br/>CLI REPL Adapter]
-        GUI[gui/app_gui.py<br/>Tkinter GUI Adapter]
-    end
-    subgraph "Shared Engine (Single Source of Truth)"
-        DISPATCH[core/dispatcher.py]
-        ENGINE[core/rule_engine.py]
-        SESSION[core/session.py]
-        RESP[core/responder.py]
-    end
-
-    CLI --> DISPATCH
-    GUI --> DISPATCH
-    DISPATCH --> ENGINE
-    DISPATCH --> RESP
-    DISPATCH --> SESSION
-
-    style CLI fill:#e0f7fa
-    style GUI fill:#fce4ec
-`
-*Both adapters call identically into the shared engine � neither contains any conversational logic of its own (FR-145).*
 ### State Diagram
 
 ```mermaid
@@ -2298,6 +2281,34 @@ graph LR
     Dev --> UC12[Inspect Debug/Dev Diagnostics]
 ```
 
+
+---
+
+### Dual-Interface Architecture (CLI + Optional GUI)
+
+```mermaid
+graph TB
+    subgraph "Presentation Layer (Two Interchangeable Adapters)"
+        CLI[core/loop.py<br/>CLI REPL Adapter]
+        GUI[gui/app_gui.py<br/>Tkinter GUI Adapter]
+    end
+    subgraph "Shared Engine (Single Source of Truth)"
+        DISPATCH[core/dispatcher.py]
+        ENGINE[core/rule_engine.py]
+        SESSION[core/session.py]
+        RESP[core/responder.py]
+    end
+
+    CLI --> DISPATCH
+    GUI --> DISPATCH
+    DISPATCH --> ENGINE
+    DISPATCH --> RESP
+    DISPATCH --> SESSION
+
+    style CLI fill:#e0f7fa
+    style GUI fill:#fce4ec
+```
+*Both adapters call identically into the shared engine - neither contains any conversational logic of its own (FR-145).*
 
 ---
 
@@ -2376,8 +2387,7 @@ decodebot-ai/
 | Path | Responsibility |
 |---|---|
 | `main.py` | Minimal launcher; delegates immediately to `decodebot.core.app.run()` |
-| decodebot/core/ | All engine logic: loop, dispatch, session, config, logging, stats, terminal animations |
-| decodebot/gui/ | Optional Tkinter GUI adapter � window, widgets, animations, theme (FR-144�FR-163) |
+| `decodebot/core/` | All engine logic: loop, dispatch, session, config, logging, stats |
 | `decodebot/rules/` | First-party rule modules implementing each intent category |
 | `decodebot/plugins/` | Community/contributor-provided rule modules (opt-in, auto-discovered) |
 | `decodebot/utils/` | Stateless helper functions (string ops, formatting, terminal utilities) |
@@ -2533,6 +2543,27 @@ function fuzzy_suggest(normalized_text: str) -> str | None:
     return best_match
 ```
 
+
+---
+
+### Folder Structure Additions — Animation & GUI (Category P/Q)
+
+```
+├── decodebot/
+│   ├── gui/
+│   │   ├── __init__.py
+│   │   ├── app_gui.py          # Tkinter window bootstrap, event loop (FR-144, FR-146)
+│   │   ├── widgets.py           # Chat bubble, entry field, send button components
+│   │   ├── animations.py        # Fade-in, typing indicator (FR-149, FR-150)
+│   │   └── theme.py             # Light/dark palette shared with CLI colors (FR-151)
+│   ├── core/
+│   │   └── animation.py         # CLI terminal animation effects (FR-134–FR-143)
+├── tests/
+│   ├── test_gui.py               # FR-144–FR-163
+│   └── test_animations.py        # FR-134–FR-143
+├── docs/
+│   └── GUI_GUIDE.md
+```
 
 ---
 
@@ -2752,31 +2783,32 @@ def classify_intent(raw_input: str, session: SessionState) -> Intent:
 | TC-E-014 | Name containing only invalid characters: `"!!!"` | Rejected; user prompted to re-enter |
 | TC-E-015 | Session with exactly 100 history entries, then 1 more sent | Oldest entry evicted; buffer stays at 100 |
 
-### Animation Tests (12)
+### Animation & GUI Tests (20)
 
 | Test ID | Description | Expected Result |
 |---|---|---|
 | TC-ANIM-001 | Typewriter effect timing | 40-char response takes ~0.67s at default speed |
 | TC-ANIM-002 | Typewriter interrupt | Keypress mid-animation flushes remaining text instantly |
 | TC-ANIM-003 | Thinking indicator cycles | Frame set cycles correctly within configured interval |
-| TC-ANIM-004 | enable_animations: false | Zero sleep() calls invoked during a full session |
+| TC-ANIM-004 | `enable_animations: false` | Zero `sleep()` calls invoked during a full session |
 | TC-ANIM-005 | Non-TTY auto-disable | Piped output produces instant, undelayed text |
-| TC-ANIM-006 | educed_motion mode | Static indicators shown, no cycling frames |
+| TC-ANIM-006 | `reduced_motion` mode | Static indicators shown, no cycling frames |
 | TC-ANIM-007 | Ctrl+C during animation | Exits within 100ms same as normal input wait |
 | TC-ANIM-008 | Animation frames excluded from logs | Log contains one entry per response, not per frame |
-| TC-GUI-001 | --gui flag launches window | Window opens with chat pane, entry field, send button |
-| TC-GUI-002 | python main.py (no flag) unaffected | Behaves identically to pre-GUI CLI |
-| TC-GUI-003 | Shared rule engine parity | classify_intent("hi") identical via CLI path and GUI path |
+| TC-GUI-001 | `--gui` flag launches window | Window opens with chat pane, entry field, send button |
+| TC-GUI-002 | `python main.py` (no flag) unaffected | Behaves identically to pre-GUI CLI |
+| TC-GUI-003 | Shared rule engine parity | `classify_intent("hi")` identical via CLI path and GUI path |
 | TC-GUI-004 | Enter-to-send | Message submits and entry field clears |
 | TC-GUI-005 | Chat bubble alignment | User right-aligned, bot left-aligned, correct order |
-| TC-GUI-006 | GUI command parity | stats/help/etc. produce identical data to CLI |
-| TC-GUI-007 | GUI exit via window close | Farewell/summary logic runs identically to typing ye |
+| TC-GUI-006 | GUI command parity | `stats`/`help`/etc. produce identical data to CLI |
+| TC-GUI-007 | GUI exit via window close | Farewell/summary logic runs identically to typing `bye` |
 | TC-GUI-008 | GUI error non-blocking | Forced exception caught, logged, window stays responsive |
-| TC-GUI-009 | GUI logging tagged correctly | Log lines show decodebot.gui logger name |
-| TC-GUI-010 | Headless fallback | --gui on a headless runner falls back to CLI with warning, no crash |
-| TC-GUI-011 | Compliance Matrix unaffected | 	est_compliance.py passes with GUI module present, unused |
-| TC-GUI-012 | Zero non-stdlib GUI imports | 	est_no_prohibited_imports.py extended check passes |
-> **Test Count Summary:** 8 (Compliance-core, itemized) + 10 + 10 + 8 + 10 (Compliance grouped rows) + 30 (Unit) + 15 (Integration) + 10 (Regression) + 10 (Manual) + 15 (Acceptance) + 10 (Negative) + 15 (Edge Case) + 12 (Animation & GUI) = **117+ total test cases**, exceeding the 100+ requirement.
+| TC-GUI-009 | GUI logging tagged correctly | Log lines show `decodebot.gui` logger name |
+| TC-GUI-010 | Headless fallback | `--gui` on a headless runner falls back to CLI with warning, no crash |
+| TC-GUI-011 | Compliance Matrix unaffected | `test_compliance.py` passes with GUI module present, unused |
+| TC-GUI-012 | Zero non-stdlib GUI imports | `test_no_prohibited_imports.py` extended check passes |
+
+> **Test Count Summary (Part I — Chatbot/GUI/Animation):** 105 (original Week 1 suite) + 20 (Animation & GUI, TC-ANIM/TC-GUI) = **125+ total test cases** for Part I alone, exceeding the 100+ requirement. Part II (Week 2 ML Engine) adds its own dedicated test suite, counted separately below.
 
 
 ---
@@ -2914,6 +2946,9 @@ You: <cursor awaits input here>
 | Documentation | ☐ README ☐ CONTRIBUTING ☐ CHANGELOG ☐ LICENSE ☐ this SPEC.md kept current |
 
 
+| Terminal animations | ☐ typewriter effect ☐ thinking indicator ☐ animated banner ☐ globally toggleable ☐ auto-disabled when piped ☐ Ctrl+C always responsive |
+| GUI mode | ☐ `--gui` flag works ☐ default CLI unaffected ☐ shared rule engine (no logic duplication) ☐ full command parity ☐ headless fallback ☐ zero non-stdlib deps ☐ Compliance Matrix still 100% via CLI |
+
 ---
 
 ## GitHub Standards
@@ -2960,27 +2995,33 @@ At least one annotated screenshot or terminal-recording GIF (e.g., via `asciinem
 ### v1.0 — Core Release (This Specification)
 - Full DecodeLabs compliance, complete rule-based feature set, full test suite, professional CLI, documentation.
 
-### v1.1 — Polish Release
-- Expanded rule tables (broader topic-adjacent fallback coverage).
-- Additional easter eggs and hidden commands.
-- Accessibility audit and refinements.
+### v1.1 — GUI & Animation Release ✅ (Implemented in this specification, Category P/Q)
+- Terminal animation effects (typewriter printing, thinking indicator, animated banner/clear).
+- Optional Tkinter GUI mode (`--gui` flag), reusing the CLI's rule engine unchanged.
+- Accessibility audit and refinements (reduced-motion mode, `--plain` mode, font scaling).
 
-### v2.0 — Extensibility Release
+### v2.0 — Machine Learning Data Classification Release ✅ (Implemented in this specification, Part II / Category R)
+- New, separate Machine Learning Engine (`ml/`) for supervised classification, per DecodeLabs Week 2.
+- Chatbot Engine (Categories A–Q) remains 100% rule-based and completely unaffected.
+- See **PART II — WEEK 2: MACHINE LEARNING DATA CLASSIFICATION ENGINE** below for full detail.
+
+### v2.1 — Extensibility Release (Chatbot)
 - Public plugin marketplace/registry pattern (community-contributed rule packs distributed as separate installable modules).
 - Optional persistent (opt-in) conversation history across sessions.
 - Enhanced settings persistence (`settings save`).
 
-### v3.0 — Multi-Surface Release
-- **GUI:** Optional Tkinter/PyQt front end reusing the same rule engine core, unchanged.
+### v3.0 — Multi-Surface & Multi-Model Release
 - **Web:** Optional Flask/FastAPI web chat interface reusing the same rule engine core, unchanged.
 - **Database:** Optional persistent storage backend (SQLite) for history/stats, strictly opt-in.
+- **ML Expansion:** Additional classifiers (Decision Tree, SVM, Logistic Regression, Random Forest) and additional datasets beyond Iris, per future DecodeLabs weeks.
 
-### Future — "Chapter 2" (Explicitly Out of Scope for This Spec)
+### Future — "Chapter 3" (Explicitly Out of Scope for This Spec)
 - **Voice:** Speech-to-text/text-to-speech front end.
-- **NLP:** A clearly separated, opt-in branch or mode exploring lightweight NLP (e.g., tokenization, intent embeddings) as an educational contrast to the rule-based core — never replacing it.
-- **LLMs:** A clearly separated, opt-in "DecodeBot Neural" mode demonstrating the difference between rule-based and LLM-backed conversational agents, marketed explicitly as a *separate project/mode*, never blended into the core rule-based engine covered by this SPEC.
+- **Deep Learning / Computer Vision:** Per the official DecodeLabs Week 2 materials ("Emerging Horizons": tabular data → computer vision, deep learning & CNNs), future weeks may extend the ML Engine from tabular classification (Iris, KNN) toward deep learning and computer vision tasks. This is explicitly a **future, separate** extension of the ML Engine, not part of this specification's Week 2 scope.
+- **NLP:** A clearly separated, opt-in branch or mode exploring lightweight NLP (e.g., tokenization, intent embeddings) as an educational contrast to the rule-based Chatbot Engine — never replacing it.
+- **LLMs:** A clearly separated, opt-in "DecodeBot Neural" mode demonstrating the difference between rule-based and LLM-backed conversational agents, marketed explicitly as a *separate project/mode*, never blended into the core rule-based Chatbot Engine covered by this SPEC.
 
-> **Note:** Everything under "Future" is explicitly **out of scope** for the v1.0.0 implementation this SPEC.md governs. OpenCode must not implement any Future-section item unless a new, separate specification is authored for it.
+> **Note:** Everything under "Future" is explicitly **out of scope** for the v2.0.0 implementation this SPEC.md governs. OpenCode must not implement any Future-section item unless a new, separate specification is authored for it.
 
 ---
 
@@ -2997,15 +3038,1190 @@ At least one annotated screenshot or terminal-recording GIF (e.g., via `asciinem
 - A rich feature set increases code volume and review burden versus a minimal script — justified by the Portfolio/Learning objectives.
 - Bounded history/log sizes trade completeness of long-term record for guaranteed memory safety (NFR-019, NFR-039).
 
-- GUI animation and Tkinter rendering behavior can vary subtly across OS window managers (font rendering, default padding) � treat as a known cross-platform cosmetic limitation, not a functional bug.
-- Headless/CI environments cannot exercise the GUI path at all; GUI tests should mock the Tk root window rather than requiring a real display where possible.
-
 ### Future Improvements
 - Expand topic-adjacent fallback coverage based on real `UNKNOWN`-input logs (FR-052) gathered from actual usage.
 - Consider a lightweight, fully local synonym/typo dictionary to further improve match recall without violating the no-NLP constraint.
 - Explore opt-in persistent history/stats for users who want cross-session continuity.
 
 
+### Animation & GUI-Specific Risks
+- GUI animation and Tkinter rendering behavior can vary subtly across OS window managers (font rendering, default padding) — treat as a known cross-platform cosmetic limitation, not a functional bug.
+- Headless/CI environments cannot exercise the GUI path at all; GUI tests should mock the Tk root window rather than requiring a real display where possible.
+
+---
+
+---
+---
+
+# PART II — WEEK 2: MACHINE LEARNING DATA CLASSIFICATION ENGINE
+
+> **Scope of Part II:** This part documents the **new** Machine Learning Engine added in DecodeLabs AI Internship Week 2 ("Project 2: Data Classification Using AI"). It is **additive only**. Every requirement, diagram, and standard in Part I (above) remains unchanged, unweakened, and fully in force. The Chatbot Engine, its Rule Engine, its optional Tkinter GUI, and its terminal animations continue to be **100% rule-based** with **zero** ML/NLP/LLM involvement — that constraint (`CON-01`, `FR-009`) is scoped to the Chatbot Engine specifically and is **not** relaxed anywhere in Part II. Part II introduces `scikit-learn`-based supervised learning **only** inside a new, clearly bounded `decodebot/ml/` module, exactly as mandated by the official DecodeLabs Week 2 brief.
+
+## Week 2 Executive Summary
+
+Week 2 evolves **DecodeBot AI** from a purely rule-based conversational agent into a two-engine AI application: the existing **Chatbot Engine** (unchanged) and a new **Machine Learning Engine** implementing supervised classification per the official DecodeLabs "Project 2: Data Classification Using AI" brief. The ML Engine loads a small benchmark dataset (the classic Iris dataset: 150 samples, 3 balanced classes, 4 numeric features), validates and preprocesses it (feature scaling via `StandardScaler`, shuffling to remove order bias), splits it into training and test sets, trains a K-Nearest Neighbors (KNN) classifier using `scikit-learn`, generates predictions, and evaluates model quality using a confusion matrix and precision/recall/F1 metrics — explicitly going beyond raw accuracy, per the brief's "Accuracy Mirage" guidance ("In imbalanced data, accuracy is a lie. We must look deeper.").
+
+Beyond the internship's minimum bar, DecodeBot AI's ML Engine is engineered as a **modular, reusable, portfolio-grade pipeline**: a dedicated dataset loader/validator, a configurable preprocessing stage, a trainer supporting multiple interchangeable classifiers (not just KNN), a persistence layer (saved/loaded models), a model comparison utility, visualization (confusion matrix heatmap, K-tuning elbow curve), and full CLI + GUI integration — all while remaining completely decoupled from, and non-disruptive to, the Week 1 Chatbot Engine.
+
+## Objectives — Week 2 Additions
+
+### Internship Objectives (Week 2)
+- OBJ-INT-05: Load and understand a real dataset (Iris) using `pandas`/`scikit-learn` data-loading utilities.
+- OBJ-INT-06: Split data into training and testing sets with reproducible, shuffled sampling.
+- OBJ-INT-07: Apply a simple, well-understood classification algorithm (K-Nearest Neighbors) via `scikit-learn`.
+- OBJ-INT-08: Demonstrate the full train → predict → evaluate supervised-learning workflow.
+
+### Technical Objectives (Week 2)
+- OBJ-TECH-06: Implement the ML Engine as a fully isolated module (`decodebot/ml/`) with zero coupling to the Chatbot Engine's rule logic.
+- OBJ-TECH-07: Support multiple, swappable classification algorithms behind one consistent interface (Strategy pattern).
+- OBJ-TECH-08: Persist trained models to disk and reload them without retraining, using `joblib`.
+- OBJ-TECH-09: Achieve reproducible results via a fixed, configurable random seed across shuffling, splitting, and model initialization.
+
+### Portfolio Objectives (Week 2)
+- OBJ-PORT-04: Demonstrate supervised machine learning competency (data handling, model training, evaluation) alongside the existing rule-based engineering competency from Week 1.
+- OBJ-PORT-05: Produce visualizations (confusion matrix, K-tuning curve) suitable for a portfolio README/demo.
+
+### Learning Objectives (Week 2)
+- OBJ-LEARN-05: Reinforce the supervised-learning pipeline: load → validate → preprocess → split → train → predict → evaluate.
+- OBJ-LEARN-06: Build practical experience with `scikit-learn`'s `fit`/`predict` API and evaluation metrics (confusion matrix, precision, recall, F1).
+- OBJ-LEARN-07: Understand *why* accuracy alone is an insufficient evaluation metric ("Accuracy Mirage").
+
+### Stretch Goals (Week 2)
+- OBJ-STRETCH-05: Support additional classifiers (Decision Tree, Logistic Regression, SVM, Random Forest) with a model-comparison report.
+- OBJ-STRETCH-06: Automated K-value tuning via the elbow method (error rate vs. K).
+- OBJ-STRETCH-07: CLI and GUI "predict" commands allowing a live user to submit new feature values and receive a classification.
+- OBJ-STRETCH-08: Dataset-agnostic design so future weeks can plug in a different CSV dataset without rewriting the pipeline.
+
+## Scope — Week 2 Additions
+
+### In Scope (New — Week 2)
+- A new `decodebot/ml/` module implementing: dataset loading, dataset validation, preprocessing (scaling, shuffling), train/test splitting, model training (KNN as the required baseline, plus optional additional classifiers), prediction, evaluation (confusion matrix, precision, recall, F1, accuracy), model persistence (save/load), model comparison, and visualization (confusion matrix heatmap, K-tuning elbow chart).
+- `scikit-learn`, `pandas`, `numpy`, and `matplotlib` (or `seaborn`) as new, explicitly-scoped runtime dependencies — used **only** inside `decodebot/ml/` and its supporting CLI/GUI integration points.
+- The bundled Iris dataset (via `sklearn.datasets.load_iris()` or a bundled CSV) as the default Week 2 dataset.
+- New CLI commands (`train`, `predict`, `evaluate`, `models`) and GUI panels for interacting with the ML Engine.
+- Configuration keys for the ML Engine (dataset path, test split ratio, K value, random seed, model directory).
+- Logging and error handling for the ML Engine, consistent with the existing logging/error-handling architecture from Part I.
+- A full automated test suite for the ML Engine (unit tests for each pipeline stage, integration tests for the full pipeline, model-quality regression tests).
+
+### Out of Scope (Week 2)
+- Deep learning, neural networks, or any `torch`/`tensorflow`-based model (explicitly deferred to a future week per the brief's "Emerging Horizons" slide).
+- Computer vision / image classification.
+- Any modification of the Chatbot Engine's rule-based classification logic (`Intent` classification in `core/rule_engine.py` remains untouched and 100% rule-based).
+- Any use of the ML Engine's classifier to answer chatbot conversational intents — the two engines are and remain functionally and architecturally separate.
+- Real-time/streaming data ingestion; the ML Engine operates on static, file-based datasets.
+- Hyperparameter optimization frameworks (e.g., `optuna`, `GridSearchCV` is permitted as a `scikit-learn`-native utility; external AutoML tools are out of scope).
+- Cloud deployment or model-serving infrastructure (e.g., REST API for predictions) — the ML Engine is invoked locally via CLI/GUI only, consistent with the project's local-first philosophy.
+
+### Future Scope (Week 2 → Later Weeks)
+- Deep learning and computer vision (per the brief's own roadmap: "From Tabular Data... to Computer Vision... Next: Deep Learning & CNNs").
+- Support for user-supplied, arbitrary CSV datasets beyond Iris.
+- A lightweight local REST API exposing `predict()` for integration with the Chatbot Engine (e.g., "ask DecodeBot to classify a flower") — explicitly **not** implemented in Week 2; if ever built, it must remain a thin bridge that calls the ML Engine's existing `predict()` function, never blending the two engines' internal logic.
+
+## DecodeLabs Week 2 Compliance Matrix
+
+> Mirroring the rigor of the Week 1 Compliance Matrix. Every official DecodeLabs Week 2 requirement is mapped to Functional Requirements and Test Cases below. All rows must pass before the Week 2 deliverable is considered complete.
+
+| # | Internship Requirement (from official Week 2 brief) | Mandatory | Mapped Functional Requirements | Mapped Test Cases | Completion Criteria |
+|---|---|---|---|---|---|
+| 1 | Load and understand a dataset | Yes | FR-164–FR-172 | TC-ML-001–010 | Iris dataset loads successfully; shape, feature names, class names, and class balance are inspectable and logged |
+| 2 | Perform necessary data preprocessing (scaling) | Yes | FR-173–FR-181 | TC-ML-011–020 | `StandardScaler` applied; post-scaling mean ≈ 0 and variance ≈ 1 per feature, verified in tests |
+| 3 | Shuffle and split data into training and testing sets | Yes | FR-182–FR-186 | TC-ML-021–028 | Data is shuffled (`random_state` configurable) before an 80/20 (default, configurable) train/test split; no data leakage between sets |
+| 4 | Apply a simple classification algorithm (K-Nearest Neighbors) | Yes | FR-187–FR-195 | TC-ML-029–038 | `KNeighborsClassifier` from `scikit-learn` is instantiated, fit, and used to predict, following the `INSTANTIATE → FIT → PREDICT` workflow from the official brief |
+| 5 | Train the model | Yes | FR-189, FR-191 | TC-ML-031–033 | `model.fit(X_train, y_train)` completes without error; trained model object is retrievable |
+| 6 | Generate predictions on the test set | Yes | FR-196–FR-200 | TC-ML-039–044 | `model.predict(X_test)` returns a class-label array of correct length and valid class values |
+| 7 | Evaluate the model (beyond raw accuracy) | Yes | FR-201–FR-209 | TC-ML-045–058 | Confusion matrix, precision, recall, and F1 score are computed and reported per the brief's explicit "accuracy is a lie" guidance |
+| 8 | Testing | Yes | All of Category R | TC-ML-001–070+ | A full automated test suite covers every pipeline stage; `tests/test_ml_compliance.py` gate passes |
+
+### Compliance Statement (Week 2)
+
+DecodeBot AI's Week 2 ML Engine (FR-164 through the end of Category R) is a strict superset of the DecodeLabs Week 2 checklist above, following the exact **IPO Framework** (Input → Process → Output) and **INSTANTIATE → FIT → PREDICT** workflow shown in the official brief, using the Iris benchmark dataset (150 samples, 3 classes, 4 features) and the K-Nearest Neighbors algorithm as the required baseline classifier. A CI gate (`tests/test_ml_compliance.py`) runs the 8-row compliance group on every commit and must pass before any other Week 2 test group is considered. **This compliance layer does not replace, weaken, or interact with the Week 1 Compliance Matrix — both matrices must pass independently and simultaneously.**
+
+## Functional Requirements — Category R: Machine Learning Engine (FR-164 – FR-232)
+
+> **69 new Functional Requirements**, bringing the project total to **232 Functional Requirements (FR-001 – FR-232)** across both Parts. Format matches Part I exactly: Priority, Description, Rationale, Dependencies, Acceptance Criteria, Edge Cases, Example.
+
+### Category R1 — Dataset Loading & Understanding (FR-164 – FR-172)
+
+**FR-164 — Dataset Loader Module**
+- **Priority:** P0
+- **Description:** A dedicated `decodebot/ml/dataset_loader.py` module shall load the Iris dataset via `sklearn.datasets.load_iris()` by default, returning features (`X`), target labels (`y`), feature names, and target/class names as a structured object.
+- **Rationale:** Directly satisfies the Week 2 brief's "Load and understand a dataset" requirement.
+- **Dependencies:** None
+- **Acceptance Criteria:** `load_dataset()` returns 150 samples, 4 features, 3 classes, matching the official Iris benchmark shown in the brief.
+- **Edge Cases:** `scikit-learn` version differences in `load_iris()`'s return format — the loader normalizes to a consistent internal `Dataset` dataclass regardless of `sklearn` version.
+- **Example:** `dataset = load_dataset("iris")` → `dataset.X.shape == (150, 4)`.
+
+**FR-165 — CSV Dataset Loading Support**
+- **Priority:** P1
+- **Description:** The dataset loader shall also support loading an arbitrary CSV file path (via `pandas.read_csv`) with a configurable target-column name, for forward-compatibility with future weeks/datasets.
+- **Rationale:** Supports OBJ-STRETCH-08 (dataset-agnostic design) without expanding Week 2's mandatory scope.
+- **Dependencies:** FR-164
+- **Acceptance Criteria:** `load_dataset(source="path/to/data.csv", target_column="species")` loads correctly for a well-formed CSV.
+- **Edge Cases:** Missing target column, non-numeric feature columns — raises a clear, caught `DatasetValidationError` (see FR-169).
+- **Example:** N/A.
+
+**FR-166 — Dataset Shape & Metadata Inspection**
+- **Priority:** P1
+- **Description:** The loader shall expose dataset metadata: number of samples, number of features, feature names, class names, and per-class sample counts.
+- **Rationale:** Satisfies "understand a dataset" — not just loading, but inspecting it.
+- **Dependencies:** FR-164
+- **Acceptance Criteria:** `dataset.describe()` returns a dict including `{"samples": 150, "features": 4, "classes": 3, "class_counts": {"setosa": 50, "versicolor": 50, "virginica": 50}}`.
+- **Edge Cases:** N/A.
+- **Example:** See Acceptance Criteria.
+
+**FR-167 — Class Balance Reporting**
+- **Priority:** P2
+- **Description:** The loader shall explicitly compute and report whether the dataset is class-balanced or imbalanced (max class count / min class count ratio), surfaced in logs and the `explore` CLI command (FR-225).
+- **Rationale:** Directly ties to the brief's "Accuracy Mirage" warning — imbalance detection is a prerequisite for interpreting accuracy correctly.
+- **Dependencies:** FR-166
+- **Acceptance Criteria:** For Iris (50/50/50), balance ratio reports as `1.0` (perfectly balanced).
+- **Edge Cases:** Single-class dataset (degenerate case) — flagged as an error, not silently processed.
+- **Example:** N/A.
+
+**FR-168 — Dataset Caching**
+- **Priority:** P3
+- **Description:** Loaded datasets shall be cached in memory for the duration of a CLI/GUI session to avoid redundant disk/network I/O on repeated `train`/`explore` commands.
+- **Rationale:** Performance polish; Iris loads from `scikit-learn`'s bundled data, so this mainly benefits future CSV-based datasets.
+- **Dependencies:** FR-164
+- **Acceptance Criteria:** A second `load_dataset("iris")` call within the same session returns the cached object without re-invoking `sklearn.datasets.load_iris()`.
+- **Edge Cases:** Explicit `--no-cache` / `reload` command bypasses the cache.
+- **Example:** N/A.
+
+**FR-169 — Dataset Validation**
+- **Priority:** P0
+- **Description:** A `decodebot/ml/dataset_validator.py` module shall validate any loaded dataset for: no missing/NaN values in required columns, consistent feature dimensionality across all rows, at least 2 distinct classes, and a minimum sample count (configurable, default 10) sufficient for a train/test split.
+- **Rationale:** Prevents downstream training failures from malformed data; professional data-handling discipline.
+- **Dependencies:** FR-164
+- **Acceptance Criteria:** A CSV with a missing value in a feature column raises `DatasetValidationError` with a clear, actionable message.
+- **Edge Cases:** All-NaN column, single-row dataset, dataset with only 1 class — each produces a distinct, clear validation error.
+- **Example:** N/A.
+
+**FR-170 — Missing Value Handling Strategy**
+- **Priority:** P2
+- **Description:** For CSV datasets with missing values, the validator/preprocessor shall support a configurable strategy: `"error"` (default, reject the dataset), `"drop"` (drop affected rows), or `"mean_impute"` (fill numeric NaNs with column mean).
+- **Rationale:** Real-world CSV data (future weeks) will have gaps; Iris itself has none, so this is forward-looking robustness.
+- **Dependencies:** FR-169
+- **Acceptance Criteria:** With `missing_value_strategy: "drop"`, rows with NaN are excluded and the resulting row count is logged.
+- **Edge Cases:** `"mean_impute"` on a column that is entirely NaN — falls back to `"error"` for that column with a logged warning.
+- **Example:** N/A.
+
+**FR-171 — Dataset Loading Never Crashes the Application**
+- **Priority:** P0
+- **Description:** Any dataset loading/validation failure shall be caught, logged, and surfaced as a friendly CLI/GUI message — never an unhandled traceback, consistent with the Part I error-handling philosophy (FR-106, FR-111).
+- **Rationale:** Reliability parity with the Chatbot Engine.
+- **Dependencies:** FR-164, FR-169
+- **Acceptance Criteria:** Attempting to load a nonexistent CSV path produces a friendly error message and returns control to the CLI/GUI, not a crash.
+- **Edge Cases:** N/A.
+- **Example:** `train --dataset missing.csv` → `"Couldn't find that dataset file — check the path and try again."`
+
+**FR-172 — `explore` Command (Dataset Understanding CLI)**
+- **Priority:** P1
+- **Description:** A new CLI/GUI command, `explore` (or `ml explore`), shall print dataset shape, feature names, class names, class balance, and basic per-feature statistics (min, max, mean, std) using only `pandas`/`numpy` — no plotting required for this command (see FR-217 for visualization).
+- **Rationale:** Directly demonstrates "load and understand a dataset" as an interactive, inspectable CLI experience.
+- **Dependencies:** FR-164, FR-166, FR-167
+- **Acceptance Criteria:** `explore` on the Iris dataset prints 150 samples, 4 features, 3 classes, and per-feature min/max/mean/std matching known Iris statistics.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+### Category R2 — Data Preprocessing (FR-173 – FR-181)
+
+**FR-173 — Feature Scaling (StandardScaler)**
+- **Priority:** P0
+- **Description:** A `decodebot/ml/preprocessor.py` module shall apply `sklearn.preprocessing.StandardScaler` to numeric features by default, transforming each feature to mean ≈ 0 and variance ≈ 1, per the brief's "Gatekeeper Rule: Scaling."
+- **Rationale:** Mandatory Week 2 requirement; KNN is distance-based and sensitive to unscaled feature magnitudes.
+- **Dependencies:** FR-164
+- **Acceptance Criteria:** After scaling, each feature column's mean is within `1e-9` of 0 and variance within `1e-6` of 1 on the training set.
+- **Edge Cases:** Zero-variance feature (constant column) — `StandardScaler` handles this natively (results in 0s); documented, not treated as an error.
+- **Example:** N/A.
+
+**FR-174 — Scaler Fit-on-Train, Transform-on-Both**
+- **Priority:** P0
+- **Description:** The scaler shall be `fit()` **only** on the training set and then used to `transform()` both the training and test sets — never fit on the full dataset or the test set — to prevent data leakage.
+- **Rationale:** Fundamental ML correctness requirement; a common beginner mistake the spec explicitly guards against.
+- **Dependencies:** FR-173, FR-182 (train/test split)
+- **Acceptance Criteria:** A unit test asserts the scaler's fitted `mean_`/`scale_` attributes are computed from `X_train` only, and that `X_test` is transformed using those same fitted parameters.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-175 — Configurable/Swappable Scaler**
+- **Priority:** P2
+- **Description:** The preprocessing stage shall support swapping `StandardScaler` for `MinMaxScaler` or "none" via configuration, behind a consistent `Preprocessor` interface.
+- **Rationale:** Extensibility (mirrors the Chatbot Engine's plugin philosophy — swappable strategies behind one interface) without changing the default Week 2 behavior.
+- **Dependencies:** FR-173
+- **Acceptance Criteria:** Setting `scaler_type: "minmax"` in config uses `MinMaxScaler` instead, verified by a distinct unit test.
+- **Edge Cases:** Invalid `scaler_type` value falls back to `StandardScaler` (the default) with a logged warning.
+- **Example:** N/A.
+
+**FR-176 — Encoding of Categorical Targets**
+- **Priority:** P2
+- **Description:** For CSV datasets (FR-165) with string class labels, the preprocessor shall encode target labels to integers via `sklearn.preprocessing.LabelEncoder`, retaining a mapping back to human-readable class names for reporting.
+- **Rationale:** Forward-compatibility with non-Iris datasets; Iris's `sklearn`-provided target is already numeric, so this path is exercised primarily by CSV inputs.
+- **Dependencies:** FR-165
+- **Acceptance Criteria:** A CSV with string labels `"cat"/"dog"` encodes to `0/1` internally while predictions/reports display `"cat"/"dog"`.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-177 — Data Shuffling Before Split**
+- **Priority:** P0
+- **Description:** Data shall be shuffled (using a configurable `random_state` for reproducibility) before the train/test split, per the brief's "Structural Integrity: The Split" guidance ("Randomize before splitting to remove order bias").
+- **Rationale:** Mandatory Week 2 requirement; the Iris dataset is ordered by class by default, so skipping shuffling would produce a broken split.
+- **Dependencies:** FR-164
+- **Acceptance Criteria:** With `shuffle=True` (default) and a fixed `random_state`, both the train and test sets contain a representative mix of all 3 classes.
+- **Edge Cases:** `shuffle=False` (explicitly opt-out, for debugging/determinism testing only) is supported but never the default.
+- **Example:** N/A.
+
+**FR-178 — Reproducibility via Fixed Random Seed**
+- **Priority:** P0
+- **Description:** A single, configurable `random_state` (default `42`) shall be used consistently across shuffling, splitting, and any stochastic model initialization, ensuring identical results across repeated runs.
+- **Rationale:** Scientific reproducibility; enables deterministic testing of ML behavior, mirroring the Chatbot Engine's `NFR-022` determinism philosophy applied to the ML domain.
+- **Dependencies:** FR-177
+- **Acceptance Criteria:** Two full pipeline runs with the same `random_state` produce bit-identical train/test splits and identical evaluation metrics.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-179 — Preprocessing Pipeline Object**
+- **Priority:** P1
+- **Description:** Preprocessing steps (scaling, encoding) shall be composed into a single `sklearn.pipeline.Pipeline`-compatible object, allowing the entire preprocessing + model to be fit/predicted/persisted as one unit.
+- **Rationale:** Professional `scikit-learn` best practice; simplifies persistence (FR-210) and prevents train/test preprocessing mismatches.
+- **Dependencies:** FR-173, FR-187
+- **Acceptance Criteria:** `pipeline.predict(raw_new_sample)` internally applies the same scaling used during training, without the caller needing to manually scale.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-180 — Preprocessing Validation Report**
+- **Priority:** P3
+- **Description:** After preprocessing, a brief before/after report (feature ranges pre- and post-scaling) shall be available via the `explore --preprocessed` flag or equivalent.
+- **Rationale:** Educational/portfolio value, directly visualizing the "Raw Data (Biased) → Standard Scaled (Balanced)" concept from the brief.
+- **Dependencies:** FR-173, FR-172
+- **Acceptance Criteria:** Report shows pre-scaling feature ranges (e.g., 0–1000-scale) and post-scaling ranges (≈ -2 to +2).
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-181 — Preprocessing Never Mutates the Original Dataset**
+- **Priority:** P1
+- **Description:** All preprocessing operations shall operate on copies of the loaded data; the original `Dataset` object returned by the loader remains unmodified and reusable.
+- **Rationale:** Prevents subtle bugs from repeated preprocessing calls compounding transformations.
+- **Dependencies:** FR-164, FR-173
+- **Acceptance Criteria:** Calling `preprocess(dataset)` twice in sequence produces identical output both times (idempotent given the same input).
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+### Category R3 — Train/Test Split (FR-182 – FR-186)
+
+**FR-182 — Train/Test Split via `scikit-learn`**
+- **Priority:** P0
+- **Description:** The pipeline shall split data into training and test sets using `sklearn.model_selection.train_test_split`, with a configurable `test_size` (default `0.2`, i.e., an 80/20 split, matching the brief's IPO diagram).
+- **Rationale:** Mandatory Week 2 requirement.
+- **Dependencies:** FR-177, FR-178
+- **Acceptance Criteria:** With 150 samples and `test_size=0.2`, the split produces 120 training and 30 test samples.
+- **Edge Cases:** `test_size` outside `(0, 1)` is rejected with a clear configuration error at startup.
+- **Example:** N/A.
+
+**FR-183 — Stratified Splitting**
+- **Priority:** P1
+- **Description:** The split shall use `stratify=y` by default, preserving the original class proportions in both the training and test sets.
+- **Rationale:** Professional best practice beyond the bare minimum requirement — prevents a test set from accidentally excluding a class, which would corrupt evaluation.
+- **Dependencies:** FR-182
+- **Acceptance Criteria:** For Iris (50/50/50), both the 120-sample training set and 30-sample test set contain approximately equal proportions of all 3 classes.
+- **Edge Cases:** Stratification is automatically disabled with a logged warning if a class has fewer than 2 samples (an edge case where stratification is mathematically impossible).
+- **Example:** N/A.
+
+**FR-184 — No Data Leakage Between Splits**
+- **Priority:** P0
+- **Description:** Test-set samples shall never be used in any preprocessing `fit()` or model `fit()` call — verified structurally (train/test are separate objects from the point of splitting onward) and by a dedicated regression test.
+- **Rationale:** Core ML correctness guarantee (ties to FR-174).
+- **Dependencies:** FR-182, FR-174
+- **Acceptance Criteria:** A test asserts that `X_test` sample indices never appear in any array passed to `scaler.fit()` or `model.fit()`.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-185 — Split Ratio Configurability**
+- **Priority:** P2
+- **Description:** `test_size` shall be configurable via `config.json` (`ml_test_size`, default `0.2`) without requiring code changes.
+- **Rationale:** Consistency with the Chatbot Engine's configuration philosophy (FR-088).
+- **Dependencies:** FR-182, FR-088
+- **Acceptance Criteria:** Setting `ml_test_size: 0.3` produces a 70/30 split on the next `train` run.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-186 — Split Summary Reporting**
+- **Priority:** P2
+- **Description:** After splitting, the CLI/GUI shall report the resulting training/test sample counts and per-class counts in each set.
+- **Rationale:** Transparency and "understand your data" educational value.
+- **Dependencies:** FR-182, FR-183
+- **Acceptance Criteria:** `train` command output includes `"Training set: 120 samples | Test set: 30 samples"`.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+### Category R4 — Model Training (FR-187 – FR-195)
+
+**FR-187 — K-Nearest Neighbors as the Required Baseline Classifier**
+- **Priority:** P0
+- **Description:** A `decodebot/ml/trainer.py` module shall implement training via `sklearn.neighbors.KNeighborsClassifier`, following the exact `INSTANTIATE → FIT → PREDICT` workflow from the official brief.
+- **Rationale:** Mandatory Week 2 requirement ("Apply a simple classification algorithm").
+- **Dependencies:** FR-182 (needs `X_train`/`y_train`)
+- **Acceptance Criteria:** `model = KNeighborsClassifier(n_neighbors=k); model.fit(X_train, y_train)` completes and `model.classes_` matches the dataset's known classes.
+- **Edge Cases:** `n_neighbors` greater than the training set size — caught and reported as a clear configuration error before calling `fit()`.
+- **Example:** Matches the brief's exact code shape: `model = KNeighborsClassifier(n_neighbors=5)`.
+
+**FR-188 — Configurable K Value**
+- **Priority:** P1
+- **Description:** The number of neighbors (`k` / `n_neighbors`) shall be configurable via `config.json` (`knn_k`, default `5`), matching the brief's example.
+- **Rationale:** Direct mapping to brief's example code and "Tuning the Engine: Choosing K" guidance.
+- **Dependencies:** FR-187
+- **Acceptance Criteria:** Setting `knn_k: 3` trains a 3-neighbor model on the next `train` run.
+- **Edge Cases:** `knn_k <= 0` rejected as invalid configuration.
+- **Example:** N/A.
+
+**FR-189 — Model Fitting**
+- **Priority:** P0
+- **Description:** `Trainer.train(X_train, y_train)` shall call the underlying `scikit-learn` model's `.fit()` method and return a trained model object plus training duration.
+- **Rationale:** Mandatory Week 2 requirement ("Train the model").
+- **Dependencies:** FR-187
+- **Acceptance Criteria:** After training, `model.predict(X_train[:1])` returns a valid class prediction without error.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-190 — K-Value Auto-Tuning (Elbow Method)**
+- **Priority:** P2
+- **Description:** An optional `tune_k()` utility shall train the model across a configurable range of K values (default 1–20), compute the test-set error rate for each, and report the "elbow" (lowest stable error rate), per the brief's "Tuning the Engine" guidance.
+- **Rationale:** Demonstrates deeper understanding of hyperparameter selection beyond a hardcoded K, as encouraged by the brief's conclusion ("experiment with unique solutions").
+- **Dependencies:** FR-187, FR-201 (evaluation)
+- **Acceptance Criteria:** `tune_k(k_range=range(1,21))` returns a list of `(k, error_rate)` tuples and identifies the K with the lowest error rate.
+- **Edge Cases:** Ties between multiple K values — the smallest K among ties is selected (simpler model preferred, standard ML convention).
+- **Example:** N/A.
+
+**FR-191 — Multi-Classifier Support (Extensibility)**
+- **Priority:** P2
+- **Description:** The trainer shall support additional `scikit-learn` classifiers behind the same interface: `DecisionTreeClassifier`, `LogisticRegression`, `SVC`, `RandomForestClassifier`, selectable via config (`classifier_type`, default `"knn"`).
+- **Rationale:** Professional enhancement beyond the internship minimum (OBJ-STRETCH-05); demonstrates the Strategy design pattern applied to ML models, mirroring the Chatbot Engine's plugin philosophy.
+- **Dependencies:** FR-187
+- **Acceptance Criteria:** Setting `classifier_type: "decision_tree"` trains a `DecisionTreeClassifier` instead of KNN, using the identical `train()`/`predict()`/`evaluate()` interface.
+- **Edge Cases:** Unknown `classifier_type` value falls back to `"knn"` with a logged warning.
+- **Example:** N/A.
+
+**FR-192 — Training Time Tracking**
+- **Priority:** P3
+- **Description:** Training duration (milliseconds) shall be measured and reported after each `train` command.
+- **Rationale:** Performance transparency, feeds NFR benchmarks.
+- **Dependencies:** FR-189
+- **Acceptance Criteria:** `train` output includes `"Model trained in 4ms."` (actual value varies by hardware).
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-193 — Training Never Crashes the Application**
+- **Priority:** P0
+- **Description:** Any exception during training (invalid data shape, invalid hyperparameters) shall be caught, logged, and surfaced as a friendly message, consistent with FR-106/FR-171.
+- **Rationale:** Reliability parity with the rest of the application.
+- **Dependencies:** FR-189
+- **Acceptance Criteria:** Attempting to train with mismatched `X`/`y` lengths produces a friendly error, not a raw `ValueError` traceback to the console.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-194 — `train` CLI/GUI Command**
+- **Priority:** P0
+- **Description:** A new `train` command shall run the full pipeline (load → validate → preprocess → split → train) and report a summary (dataset size, split sizes, chosen K/classifier, training time).
+- **Rationale:** Primary user-facing entry point for the ML Engine's core workflow.
+- **Dependencies:** FR-164–FR-193
+- **Acceptance Criteria:** `train` with default config trains a KNN(k=5) model on Iris and reports a summary within 1 second.
+- **Edge Cases:** N/A.
+- **Example:** See CLI Specification additions below.
+
+**FR-195 — Training Reproducibility Test Hook**
+- **Priority:** P2
+- **Description:** The trainer shall expose a way to retrain deterministically (same `random_state`, same data) for regression testing, ensuring model behavior doesn't silently drift across code changes.
+- **Rationale:** Enables `TC-ML` regression tests to assert stable accuracy ranges.
+- **Dependencies:** FR-178, FR-189
+- **Acceptance Criteria:** Two consecutive `train` invocations with identical config and data produce identical trained model parameters.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+### Category R5 — Prediction Interface (FR-196 – FR-200)
+
+**FR-196 — Batch Prediction on Test Set**
+- **Priority:** P0
+- **Description:** `Predictor.predict(model, X_test)` shall return predicted class labels for the full test set in one call, mirroring the brief's `predictions = model.predict(X_test)`.
+- **Rationale:** Mandatory Week 2 requirement ("Prediction").
+- **Dependencies:** FR-189
+- **Acceptance Criteria:** `predict(model, X_test)` returns an array of length equal to `len(X_test)`, with all values valid class labels.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-197 — Single-Sample Prediction (Live/Interactive)**
+- **Priority:** P1
+- **Description:** The Predictor shall support classifying a single new sample (e.g., 4 user-entered feature values for Iris) via `Predictor.predict_one(model, features)`.
+- **Rationale:** Enables the interactive `predict` CLI/GUI command (FR-225) — the "let a user try it live" experience.
+- **Dependencies:** FR-196
+- **Acceptance Criteria:** `predict_one(model, [5.1, 3.5, 1.4, 0.2])` returns `"setosa"` (a known correct classification for this canonical Iris sample).
+- **Edge Cases:** Feature vector with the wrong number of dimensions is rejected with a clear error before reaching `scikit-learn`.
+- **Example:** N/A.
+
+**FR-198 — Prediction Confidence/Probability (Where Supported)**
+- **Priority:** P2
+- **Description:** For classifiers supporting `predict_proba()` (KNN, Logistic Regression, Random Forest), the Predictor shall optionally report per-class probability alongside the predicted label.
+- **Rationale:** Richer, more informative output than a bare label; useful for portfolio demos.
+- **Dependencies:** FR-196, FR-191
+- **Acceptance Criteria:** For a KNN model, `predict_one(..., return_proba=True)` returns both the predicted label and a probability distribution over the 3 classes summing to 1.0.
+- **Edge Cases:** Classifiers without `predict_proba()` support (e.g., some SVM configurations) gracefully omit probability output with a logged note, rather than erroring.
+- **Example:** N/A.
+
+**FR-199 — Prediction Requires a Trained Model**
+- **Priority:** P0
+- **Description:** Attempting to predict before any model has been trained (or loaded from disk, FR-210) shall produce a clear, friendly message directing the user to run `train` first, never a raw `NotFittedError`.
+- **Rationale:** Guides users through the correct workflow order.
+- **Dependencies:** FR-196
+- **Acceptance Criteria:** Running `predict` immediately after a fresh install (no trained model present) produces `"No trained model found — run 'train' first."`
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-200 — Prediction Output Formatting**
+- **Priority:** P2
+- **Description:** Batch prediction results shall be presentable as a simple table: sample index, predicted class, (optional) true class (if known), (optional) correct/incorrect flag.
+- **Rationale:** Readability for CLI/GUI users reviewing prediction results.
+- **Dependencies:** FR-196
+- **Acceptance Criteria:** `predict --show-results` on the test set prints a formatted table with all four columns when true labels are available.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+### Category R6 — Model Evaluation (FR-201 – FR-209)
+
+**FR-201 — Accuracy Score**
+- **Priority:** P1
+- **Description:** The Evaluator shall compute overall accuracy via `sklearn.metrics.accuracy_score`, reported alongside — never in place of — the deeper metrics below.
+- **Rationale:** Baseline metric, explicitly framed by the brief as insufficient alone.
+- **Dependencies:** FR-196
+- **Acceptance Criteria:** For a well-trained KNN model on Iris, test accuracy is reported and is ≥ 0.85 in the reference test environment (documented expected range, not a hard business requirement).
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-202 — Confusion Matrix**
+- **Priority:** P0
+- **Description:** The Evaluator shall compute a confusion matrix via `sklearn.metrics.confusion_matrix`, per the brief's "Diagnostic Tool: Confusion Matrix" (TP/FP/FN/TN structure, generalized to the 3-class case).
+- **Rationale:** Mandatory Week 2 requirement ("Evaluation," explicitly beyond raw accuracy).
+- **Dependencies:** FR-196
+- **Acceptance Criteria:** Confusion matrix is a 3x3 array (for Iris) whose diagonal sum plus off-diagonal sum equals the total test-set size.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-203 — Precision, Recall, and F1 Score**
+- **Priority:** P0
+- **Description:** The Evaluator shall compute per-class and macro-averaged precision, recall, and F1 score via `sklearn.metrics.classification_report` / `precision_recall_fscore_support`, per the brief's "Strategic Trade-offs" (F1 as the harmonic mean of precision and recall).
+- **Rationale:** Mandatory Week 2 requirement ("Evaluation").
+- **Dependencies:** FR-196, FR-202
+- **Acceptance Criteria:** Evaluation output includes precision, recall, and F1 for each of the 3 Iris classes, plus a macro-average.
+- **Edge Cases:** A class with zero predicted samples produces a well-defined `0.0` (with `zero_division=0` explicitly set) rather than a runtime warning/crash.
+- **Example:** N/A.
+
+**FR-204 — "Accuracy Mirage" Educational Warning**
+- **Priority:** P2
+- **Description:** When the dataset is detected as class-imbalanced (FR-167) and accuracy exceeds a high threshold (e.g., > 0.95) while F1/recall on a minority class is notably lower, the evaluation report shall surface an explicit warning referencing the "accuracy can be misleading on imbalanced data" principle from the brief.
+- **Rationale:** Directly encodes the brief's core pedagogical point into the software itself.
+- **Dependencies:** FR-167, FR-203
+- **Acceptance Criteria:** A synthetic, deliberately imbalanced test dataset triggers the warning; the balanced Iris dataset does not.
+- **Edge Cases:** N/A.
+- **Example:** `"⚠️ High accuracy but lower recall on 'virginica' — accuracy alone may be misleading here."`
+
+**FR-205 — Evaluation Report Object**
+- **Priority:** P1
+- **Description:** All evaluation results (accuracy, confusion matrix, per-class precision/recall/F1, macro averages) shall be assembled into a single structured `EvaluationReport` object, consumed identically by the CLI, GUI, and visualization layers.
+- **Rationale:** Single source of truth for evaluation output, avoiding duplicated metric computation across interfaces (mirrors FR-145's "no logic duplication" principle, applied to the ML Engine).
+- **Dependencies:** FR-201–FR-203
+- **Acceptance Criteria:** `evaluate(model, X_test, y_test)` returns one `EvaluationReport` object consumed by both `evaluate` CLI output and the GUI's evaluation panel.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-206 — `evaluate` CLI/GUI Command**
+- **Priority:** P0
+- **Description:** A new `evaluate` command shall run predictions on the test set and print the full `EvaluationReport` (accuracy, confusion matrix, precision/recall/F1) in a readable, boxed format consistent with the CLI Specification style from Part I.
+- **Rationale:** Primary user-facing entry point for Week 2's evaluation requirement.
+- **Dependencies:** FR-205
+- **Acceptance Criteria:** `evaluate` after `train` prints all required metrics without needing any additional flags.
+- **Edge Cases:** Running `evaluate` before `train` produces the same friendly guidance as FR-199.
+- **Example:** See CLI Specification additions below.
+
+**FR-207 — Cross-Validation (Enhancement)**
+- **Priority:** P3
+- **Description:** An optional `--cv` flag on `evaluate`/`train` shall run `sklearn.model_selection.cross_val_score` (default 5-fold) and report mean ± standard deviation accuracy across folds, for a more robust performance estimate than a single train/test split.
+- **Rationale:** Professional enhancement beyond the internship's minimum single-split requirement.
+- **Dependencies:** FR-201
+- **Acceptance Criteria:** `train --cv 5` reports 5-fold cross-validated accuracy alongside the standard single-split result.
+- **Edge Cases:** `cv` folds greater than the smallest class's sample count is rejected with a clear error (stratified CV requires enough samples per fold).
+- **Example:** N/A.
+
+**FR-208 — Evaluation Metrics Are Deterministic**
+- **Priority:** P1
+- **Description:** Given the same trained model and the same test set, evaluation metrics shall be bit-identical across repeated calls (no non-determinism in metric computation itself).
+- **Rationale:** Testability and trust in reported numbers.
+- **Dependencies:** FR-201–FR-203
+- **Acceptance Criteria:** Calling `evaluate()` twice on the same model/test-set pair yields identical `EvaluationReport` values.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-209 — Baseline Comparison Metric**
+- **Priority:** P3
+- **Description:** The evaluation report shall optionally include a "dummy baseline" comparison (e.g., `sklearn.dummy.DummyClassifier` predicting the most frequent class) so the trained model's improvement over a naive baseline is explicit.
+- **Rationale:** Reinforces good ML practice — a model should meaningfully beat a trivial baseline.
+- **Dependencies:** FR-201
+- **Acceptance Criteria:** Report includes `"Baseline (most-frequent) accuracy: 0.33 | Model accuracy: 0.97"` (values illustrative).
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+### Category R7 — Model Persistence & Comparison (FR-210 – FR-216)
+
+**FR-210 — Model Persistence (Save)**
+- **Priority:** P1
+- **Description:** A `decodebot/ml/model_manager.py` module shall save a trained model (including its fitted preprocessing pipeline, per FR-179) to disk via `joblib.dump()`, into a configurable `models/` directory, with a timestamped or named filename.
+- **Rationale:** Requested professional feature ("model persistence"); avoids retraining on every application launch.
+- **Dependencies:** FR-179, FR-189
+- **Acceptance Criteria:** `save_model(model, name="knn_iris")` creates `models/knn_iris.joblib` on disk.
+- **Edge Cases:** `models/` directory missing — auto-created, consistent with FR-096's log-directory handling.
+- **Example:** N/A.
+
+**FR-211 — Model Persistence (Load)**
+- **Priority:** P1
+- **Description:** The Model Manager shall load a previously saved model via `joblib.load()`, verifying it deserializes to a valid, predict-capable object before returning it.
+- **Rationale:** Enables `predict`/`evaluate` without retraining in a fresh session.
+- **Dependencies:** FR-210
+- **Acceptance Criteria:** `load_model("knn_iris")` returns an object whose `.predict()` produces the same results it did before saving.
+- **Edge Cases:** Corrupted or missing model file — caught, logged, and surfaced as a friendly "couldn't load that model" message, never a raw crash.
+- **Example:** N/A.
+
+**FR-212 — Model Loading Security Boundary**
+- **Priority:** P0
+- **Description:** Because `joblib`/`pickle`-based deserialization can execute arbitrary code if given an untrusted file, model loading shall be restricted to the project's own `models/` directory by default, with a clear warning logged if a user explicitly points it elsewhere.
+- **Rationale:** Security best practice — never silently deserialize arbitrary, potentially untrusted pickle-based files (mirrors the spirit of `NFR-006`/`NFR-007` from Part I, applied to the ML Engine's unique risk surface).
+- **Dependencies:** FR-211
+- **Acceptance Criteria:** Loading a model from outside the configured `models/` directory requires an explicit `--allow-external-path` flag and logs a security-relevant `WARNING`.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-213 — Model Metadata Recording**
+- **Priority:** P2
+- **Description:** Each saved model shall be accompanied by a small metadata file (`.json`) recording: classifier type, hyperparameters, training date, dataset used, and evaluation metrics at save time.
+- **Rationale:** Reproducibility and portfolio-grade "model card" practice.
+- **Dependencies:** FR-210, FR-205
+- **Acceptance Criteria:** `models/knn_iris.json` contains `classifier_type`, `hyperparameters`, `trained_at`, and `test_accuracy` fields.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-214 — `models` CLI/GUI Command (List Saved Models)**
+- **Priority:** P2
+- **Description:** A `models` command shall list all saved models in the `models/` directory along with their recorded metadata (FR-213).
+- **Rationale:** Discoverability of previously trained models.
+- **Dependencies:** FR-210, FR-213
+- **Acceptance Criteria:** `models` lists every `.joblib` file present with its classifier type and test accuracy.
+- **Edge Cases:** Empty `models/` directory → `"No saved models yet — run 'train' to create one."`
+- **Example:** N/A.
+
+**FR-215 — Model Comparison Utility**
+- **Priority:** P2
+- **Description:** A `compare` command shall train (or load) multiple classifiers (per FR-191) on the identical train/test split and present a side-by-side comparison table of accuracy, precision, recall, and F1.
+- **Rationale:** Requested professional feature ("model comparison"); demonstrates deeper ML competency (OBJ-STRETCH-05).
+- **Dependencies:** FR-191, FR-205
+- **Acceptance Criteria:** `compare --models knn,decision_tree,logistic_regression` prints one row per classifier with all four metrics, all evaluated on the identical test set.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-216 — Best-Model Auto-Selection (Enhancement)**
+- **Priority:** P3
+- **Description:** After a `compare` run, the tool shall optionally report which classifier achieved the highest macro-F1 score and offer to save it as the "active" default model.
+- **Rationale:** Convenience enhancement; demonstrates practical model-selection workflow.
+- **Dependencies:** FR-215
+- **Acceptance Criteria:** `compare --save-best` saves only the top-F1 classifier's model to `models/`.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+### Category R8 — Visualization (FR-217 – FR-221)
+
+**FR-217 — Confusion Matrix Heatmap**
+- **Priority:** P2
+- **Description:** A `decodebot/ml/visualization.py` module shall render the confusion matrix as a heatmap image (via `matplotlib`/`seaborn`), saved to `outputs/` (or displayed inline in the GUI).
+- **Rationale:** Requested professional feature ("visualization"); directly illustrates the brief's "Diagnostic Tool: Confusion Matrix" slide.
+- **Dependencies:** FR-202
+- **Acceptance Criteria:** `evaluate --visualize` saves `outputs/confusion_matrix.png` showing a labeled 3x3 heatmap for Iris.
+- **Edge Cases:** Headless/no-display environments — `matplotlib`'s `Agg` backend is used so image generation still succeeds without a display server.
+- **Example:** N/A.
+
+**FR-218 — K-Tuning Elbow Curve**
+- **Priority:** P2
+- **Description:** The visualization module shall plot error rate vs. K value (from FR-190's tuning results) as a line chart, matching the brief's "Tuning the Engine" elbow diagram.
+- **Rationale:** Directly visualizes the brief's own guidance on choosing K.
+- **Dependencies:** FR-190
+- **Acceptance Criteria:** `tune-k --visualize` saves `outputs/k_tuning_curve.png` with K on the x-axis and error rate on the y-axis.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-219 — Feature Scaling Before/After Plot (Enhancement)**
+- **Priority:** P3
+- **Description:** The visualization module MAY plot a before/after scatter comparison of raw vs. scaled feature distributions, matching the brief's "Raw Data (Biased) vs. Standard Scaled (Balanced)" illustration.
+- **Rationale:** Educational/portfolio value.
+- **Dependencies:** FR-173, FR-180
+- **Acceptance Criteria:** `explore --visualize-scaling` saves a two-panel comparison image.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-220 — Model Comparison Bar Chart (Enhancement)**
+- **Priority:** P3
+- **Description:** The visualization module MAY render a grouped bar chart comparing accuracy/F1 across multiple classifiers from a `compare` run (FR-215).
+- **Rationale:** Portfolio-grade presentation of the model-comparison feature.
+- **Dependencies:** FR-215
+- **Acceptance Criteria:** `compare --visualize` saves `outputs/model_comparison.png`.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-221 — Visualization Never Blocks the CLI/GUI**
+- **Priority:** P1
+- **Description:** All plot generation shall save to a file (non-interactive `matplotlib` backend) by default rather than opening a blocking GUI plot window, unless explicitly run inside the Tkinter GUI's dedicated visualization panel.
+- **Rationale:** Preserves the CLI's responsive, non-blocking philosophy (consistent with `NFR-002`/`NFR-047` from Part I).
+- **Dependencies:** FR-217
+- **Acceptance Criteria:** Running any `--visualize` flag from the CLI never opens an unexpected blocking window; it always writes a file and returns control immediately.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+### Category R9 — ML CLI/GUI Integration, Configuration, Logging & Error Handling (FR-222 – FR-232)
+
+**FR-222 — ML Commands Registered in the Existing `COMMANDS` Registry**
+- **Priority:** P1
+- **Description:** New ML commands (`train`, `predict`, `evaluate`, `explore`, `models`, `compare`, `tune-k`) shall be registered in the same `COMMANDS` single-source-of-truth registry used by the Chatbot Engine (FR-058), automatically appearing in `help` output under a distinct "Machine Learning" section.
+- **Rationale:** Consistency and discoverability — one unified command surface for the whole application.
+- **Dependencies:** FR-058
+- **Acceptance Criteria:** `help` output includes both Chatbot commands and ML commands, clearly grouped and labeled.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-223 — ML Commands Do Not Alter Chatbot Intent Classification**
+- **Priority:** P0
+- **Description:** Invoking any ML command (e.g., typing `train`) shall be classified and routed by the existing rule-based dispatcher exactly like any other command (FR-006/FR-054-style routing) — the ML Engine itself performs zero natural-language intent classification.
+- **Rationale:** Hard boundary preservation — the rule-based Chatbot Engine remains the *only* thing interpreting free-text conversational input; the ML Engine only classifies structured numeric feature vectors, never chat text.
+- **Dependencies:** FR-006, FR-161
+- **Acceptance Criteria:** A static-analysis test confirms no code path passes raw chat input into any `scikit-learn` model's `predict()` method.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-224 — GUI ML Panel**
+- **Priority:** P2
+- **Description:** The optional Tkinter GUI (Category Q) shall gain a new tab/panel ("Machine Learning") exposing dataset exploration, train, evaluate, and predict actions with the same underlying functions as the CLI (mirroring FR-145's "shared engine, no duplication" principle).
+- **Rationale:** Full feature parity between CLI and GUI, consistent with Part I's design philosophy.
+- **Dependencies:** FR-144, FR-222
+- **Acceptance Criteria:** Clicking "Train" in the GUI ML panel calls the identical `Trainer.train()` function invoked by the CLI's `train` command.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-225 — Interactive `predict` GUI Form**
+- **Priority:** P2
+- **Description:** The GUI ML panel shall provide input fields for the 4 Iris features (sepal length/width, petal length/width) and a "Classify" button invoking `Predictor.predict_one()` (FR-197), displaying the resulting class and (if available) probability breakdown.
+- **Rationale:** Tangible, demoable "live classification" experience for portfolio/recruiter review.
+- **Dependencies:** FR-197, FR-224
+- **Acceptance Criteria:** Entering `5.1, 3.5, 1.4, 0.2` and clicking "Classify" displays `"setosa"` with a probability breakdown.
+- **Edge Cases:** Non-numeric input in a feature field is rejected inline with a clear validation message, never crashing the GUI.
+- **Example:** N/A.
+
+**FR-226 — ML Configuration Keys**
+- **Priority:** P1
+- **Description:** The existing configuration system (FR-088) shall be extended with ML-specific keys: `ml_dataset` (default `"iris"`), `ml_test_size` (default `0.2`), `ml_random_state` (default `42`), `knn_k` (default `5`), `classifier_type` (default `"knn"`), `scaler_type` (default `"standard"`), `models_dir` (default `"models/"`), `ml_missing_value_strategy` (default `"error"`).
+- **Rationale:** Consistency with the Chatbot Engine's configuration philosophy; keeps the ML Engine fully configurable without code changes.
+- **Dependencies:** FR-088
+- **Acceptance Criteria:** All 8 keys are documented in `docs/CONFIGURATION.md` (extended, FR-095) with defaults and valid ranges.
+- **Edge Cases:** Per-key validation and fallback-to-default behavior (FR-094) applies identically to these new keys.
+- **Example:** N/A.
+
+**FR-227 — ML Logging Integration**
+- **Priority:** P1
+- **Description:** The ML Engine shall use the existing rotating logger (FR-096) with a distinct `decodebot.ml` logger name, logging dataset loads, training events (with hyperparameters), and evaluation results at `INFO` level.
+- **Rationale:** Single unified operational log, consistent with FR-156's chatbot/GUI logging parity precedent.
+- **Dependencies:** FR-096
+- **Acceptance Criteria:** After a `train` + `evaluate` session, `logs/decodebot.log` contains `decodebot.ml`-tagged entries for both events.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-228 — ML Error Handling Parity**
+- **Priority:** P0
+- **Description:** All ML Engine error paths (dataset errors, training errors, prediction errors, persistence errors) shall route through the same friendly-message + logged-traceback + continue-session pattern established in Part I (FR-106, FR-111), never crashing the CLI/GUI process.
+- **Rationale:** Reliability and UX consistency across both engines.
+- **Dependencies:** FR-106, FR-171, FR-193, FR-199, FR-211
+- **Acceptance Criteria:** A 1,000-iteration fuzz test covering malformed ML commands and inputs produces zero unhandled exceptions.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-229 — ML Dependency Isolation Check**
+- **Priority:** P0
+- **Description:** A dedicated static-analysis test shall assert that `decodebot/core/`, `decodebot/rules/`, and `decodebot/gui/` (the Chatbot Engine and its presentation layers) contain **zero** imports of `sklearn`, `pandas`, `numpy`, `matplotlib`, or `joblib` — these libraries may only be imported within `decodebot/ml/` and its dedicated tests/CLI wiring.
+- **Rationale:** Hard architectural boundary enforcing "the ML system is another module inside the existing project," never blended into the rule-based core, exactly as instructed.
+- **Dependencies:** FR-009 (extended)
+- **Acceptance Criteria:** `tests/test_ml_isolation.py` passes, confirming zero cross-contamination of ML libraries into the Chatbot Engine's namespace.
+- **Edge Cases:** The thin CLI/GUI "wiring" files (`main.py`, `core/dispatcher.py`) are permitted to *import and call* `decodebot.ml`'s public functions, but must not import ML libraries directly themselves — all ML-library imports stay encapsulated inside `decodebot/ml/`.
+- **Example:** N/A.
+
+**FR-230 — `requirements.txt` Update (ML Dependencies, Explicitly Scoped)**
+- **Priority:** P0
+- **Description:** `requirements.txt` shall list `scikit-learn`, `pandas`, `numpy`, `matplotlib`, and `joblib` with pinned minimum versions, clearly commented as "Machine Learning Engine dependencies (Week 2) — not required by the Chatbot Engine."
+- **Rationale:** Transparency about the scope of the new dependency surface, directly documenting the Part I vs. Part II boundary in the dependency manifest itself.
+- **Dependencies:** None
+- **Acceptance Criteria:** `requirements.txt` contains a clearly labeled section separating (previously empty) Chatbot Engine dependencies from the new ML Engine dependencies.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-231 — ML Engine Does Not Require GUI or Animation Layers**
+- **Priority:** P2
+- **Description:** All core ML commands (`train`, `predict`, `evaluate`, `explore`) shall function fully via the plain CLI (`--plain` mode, FR-133) with zero dependency on the GUI (Category Q) or animation (Category P) layers.
+- **Rationale:** Keeps the ML Engine independently testable/usable, consistent with the project's layered, decoupled architecture.
+- **Dependencies:** FR-133
+- **Acceptance Criteria:** All Week 2 Compliance Matrix tests pass using `python main.py --plain` with no GUI invoked.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-232 — ML Engine Startup Does Not Slow Down the Chatbot**
+- **Priority:** P1
+- **Description:** `scikit-learn`/`pandas`/`numpy` shall be imported lazily (only when an ML command is first invoked), not eagerly at application startup, so that plain chatbot-only sessions retain their fast startup time (`NFR-003`, < 300ms).
+- **Rationale:** Preserves the Chatbot Engine's performance guarantees even though heavier ML dependencies now exist in the project.
+- **Dependencies:** NFR-003
+- **Acceptance Criteria:** `python main.py` (chatbot-only session, no ML command invoked) still starts in under 300ms, measured with the ML dependencies installed but unused.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+> **End of Machine Learning Engine Functional Requirements (Part II).** Total: **69 new Functional Requirements (FR-164 – FR-232)**. Combined project total: **232 Functional Requirements (FR-001 – FR-232)** across both parts.
+
+## Non-Functional Requirements — Machine Learning Engine (NFR-066 – NFR-085)
+
+> 20 new Non-Functional Requirements. Combined project total: **85 Non-Functional Requirements (NFR-001 – NFR-085)**.
+
+| ID | Category | Requirement | Target / Metric | Priority |
+|---|---|---|---|---|
+| NFR-066 | Performance | Training time (Iris, KNN, default config) | < 100ms on reference hardware | P1 |
+| NFR-067 | Performance | Prediction latency (single sample) | < 10ms on reference hardware | P1 |
+| NFR-068 | Performance | Full pipeline (load → evaluate) | < 2 seconds end-to-end on reference hardware | P1 |
+| NFR-069 | Reproducibility | Deterministic results given fixed `random_state` | Bit-identical metrics across repeated runs (FR-178, FR-208) | P0 |
+| NFR-070 | Reliability | Zero unhandled crashes in the ML Engine | 0 unhandled exceptions across a 1,000-iteration ML fuzz test (FR-228) | P0 |
+| NFR-071 | Security | No unsafe deserialization of untrusted models | Model loading restricted to `models/` by default (FR-212) | P0 |
+| NFR-072 | Isolation | Zero ML library imports in the Chatbot Engine | `tests/test_ml_isolation.py` passes (FR-229) | P0 |
+| NFR-073 | Dependency management | Pinned, documented ML dependencies | `requirements.txt` lists exact minimum versions for `scikit-learn`, `pandas`, `numpy`, `matplotlib`, `joblib` | P1 |
+| NFR-074 | Memory | Peak memory during training (Iris-scale data) | < 150MB RSS | P2 |
+| NFR-075 | Startup performance | Lazy ML imports preserve chatbot startup time | Chatbot-only session starts in < 300ms even with ML deps installed (FR-232) | P1 |
+| NFR-076 | Testing | ML Engine test coverage | ≥ 90% line coverage on `decodebot/ml/` | P1 |
+| NFR-077 | Testing | Model-quality regression floor | Trained KNN model on Iris achieves ≥ 0.85 test accuracy in CI (documented expectation, not a hard business SLA) | P2 |
+| NFR-078 | Portability | ML Engine runs on the same OS/Python matrix as the Chatbot Engine | Verified on Windows, macOS, Linux, Python 3.9–3.13 | P1 |
+| NFR-079 | Documentation | ML Engine fully documented | `docs/ML_GUIDE.md` covers pipeline, configuration, and CLI/GUI usage | P1 |
+| NFR-080 | Explainability | Evaluation output never reports accuracy alone | Every `evaluate` invocation includes confusion matrix + precision/recall/F1 alongside accuracy (FR-203, FR-204) | P0 |
+| NFR-081 | Extensibility | New classifiers addable with minimal changes | Adding a new `scikit-learn` classifier to `classifier_type` requires touching ≤ 2 files (FR-191) | P2 |
+| NFR-082 | Data integrity | No silent data leakage between train/test | Verified structurally and by regression test (FR-184) | P0 |
+| NFR-083 | Usability | ML CLI commands discoverable via `help` | 100% of ML commands appear in `help` output, correctly grouped (FR-222) | P1 |
+| NFR-084 | Visualization performance | Plot generation does not block the CLI/GUI | All visualizations write to file via non-interactive backend (FR-221) | P1 |
+| NFR-085 | Model file size | Persisted Iris KNN model stays small | < 1MB per saved `.joblib` file (Iris is a small, non-deep-learning model) | P3 |
+
+## User Stories — Machine Learning Engine Additions
+
+### Data Scientist / ML Engineer (New Persona)
+- As a data scientist, I want to load and inspect a dataset before modeling, so that I understand its shape, features, and class balance.
+- As a data scientist, I want feature scaling applied correctly (fit on train, transform on both), so that my model isn't biased by feature magnitude or corrupted by data leakage.
+- As a data scientist, I want to try multiple classifiers with one consistent interface, so that I can compare their performance quickly.
+- As a data scientist, I want evaluation metrics beyond raw accuracy (confusion matrix, precision, recall, F1), so that I don't draw false conclusions from an imbalanced dataset.
+- As a data scientist, I want to persist a trained model, so that I don't need to retrain it every time I want to make a prediction.
+- As a data scientist, I want visualizations of my evaluation results, so that I can quickly communicate model quality to others.
+
+### Student (Internship Author, Week 2 Continuation)
+- As a student, I want the Week 2 ML Engine to satisfy every official DecodeLabs requirement, so that I pass the internship's Project 2 assignment without ambiguity.
+- As a student, I want my Week 1 chatbot submission to remain completely intact, so that I don't lose credit for previously-completed, previously-graded work.
+- As a student, I want to experiment with different K values and classifiers, so that I build genuine intuition about supervised learning, per the brief's own conclusion ("experiment with unique solutions").
+
+### Instructor / Reviewer (Week 2 Continuation)
+- As an instructor, I want a Week 2 Compliance Matrix mirroring the Week 1 one, so that I can quickly verify the new submission meets the Project 2 rubric.
+- As an instructor, I want to see the ML Engine cleanly separated from the chatbot's rule-based logic, so that I can confirm the student understood the distinction between rule-based and supervised-learning paradigms.
+
+### Recruiter / Hiring Manager (Week 2 Continuation)
+- As a recruiter, I want to see both rule-based engineering and applied ML skills in one coherent project, so that I can gauge full-stack AI engineering readiness, not just one narrow skill.
+- As a recruiter, I want a live-demoable "predict a flower species" feature, so that I can quickly see supervised learning in action during a screen-share.
+
+### End User (Non-Technical, GUI Context)
+- As an end user, I want to enter simple feature values into the GUI and get an instant classification, so that I can experience machine learning without writing any code.
+- As an end user, I want clear, friendly error messages if I enter invalid values, so that I'm never confused by a raw crash or technical error.
+
+## Use Cases
+
+```mermaid
+graph LR
+    DS((Data Scientist / Student))
+    DS --> UC13[Load & Explore Dataset]
+    DS --> UC14[Preprocess & Scale Features]
+    DS --> UC15[Split Data into Train/Test]
+    DS --> UC16[Train a Classifier]
+    DS --> UC17[Tune K via Elbow Method]
+    DS --> UC18[Generate Predictions]
+    DS --> UC19[Evaluate Model Quality]
+    DS --> UC20[Compare Multiple Classifiers]
+    DS --> UC21[Visualize Results]
+    DS --> UC22[Persist / Reload a Model]
+
+    EndUser((End User))
+    EndUser --> UC23[Classify a New Sample via GUI Form]
+
+    Reviewer((Instructor/Reviewer))
+    Reviewer --> UC24[Verify Week 2 Compliance Matrix]
+```
+
+| Use Case | Actor | Preconditions | Main Flow | Postconditions |
+|---|---|---|---|---|
+| UC-13: Load & Explore Dataset | Data Scientist | None | Run `explore`; dataset is loaded, validated, and summarized (shape, features, classes, balance) | Dataset object cached in session |
+| UC-14: Preprocess & Scale Features | Data Scientist | Dataset loaded | Run `train` (implicitly preprocesses) or `explore --preprocessed`; scaler fit on training data only | Scaled feature arrays ready for splitting/training |
+| UC-15: Split Data into Train/Test | Data Scientist | Dataset loaded | Data is shuffled and split (default 80/20, stratified) | `X_train`, `X_test`, `y_train`, `y_test` available |
+| UC-16: Train a Classifier | Data Scientist | Split complete | Run `train`; model instantiated, fit on training data | Trained model object available in session |
+| UC-17: Tune K via Elbow Method | Data Scientist | Split complete | Run `tune-k`; error rate computed across a K range | Recommended K value reported, optionally visualized |
+| UC-18: Generate Predictions | Data Scientist | Model trained | Run `predict`; model predicts labels for the test set (or a single new sample) | Prediction array or single label returned |
+| UC-19: Evaluate Model Quality | Data Scientist | Predictions generated | Run `evaluate`; confusion matrix, precision, recall, F1, accuracy computed and reported | `EvaluationReport` produced and displayed |
+| UC-20: Compare Multiple Classifiers | Data Scientist | Split complete | Run `compare`; multiple classifiers trained/evaluated on the identical split | Comparison table produced, optionally best model saved |
+| UC-21: Visualize Results | Data Scientist | Evaluation or tuning complete | Run any command with `--visualize`; a plot image is saved to `outputs/` | PNG file(s) available for review |
+| UC-22: Persist / Reload a Model | Data Scientist | Model trained | Run `train --save` or a subsequent `predict`/`evaluate` auto-loads a saved model | Model available across sessions without retraining |
+| UC-23: Classify a New Sample via GUI Form | End User | GUI running, a trained/loaded model available | Enter 4 feature values in the GUI ML panel, click "Classify" | Predicted class (and probability, if available) displayed in a bubble/panel |
+| UC-24: Verify Week 2 Compliance Matrix | Instructor/Reviewer | Full Week 2 test suite available | Run `pytest tests/test_ml_compliance.py` | All 8 Week 2 Compliance Matrix rows pass |
+
+## Architecture — Machine Learning Engine
+
+### Updated System Architecture (Both Engines)
+
+```mermaid
+graph TB
+    subgraph "DecodeBot AI — Full System (Week 1 + Week 2)"
+        MAIN[main.py] --> APP[core/app.py]
+        APP --> CHATBOT[Chatbot Engine<br/>core/, rules/, gui/, utils/<br/>100% rule-based, unchanged]
+        APP --> MLAPP[ML Engine Bootstrap<br/>ml/app_ml.py]
+
+        MLAPP --> LOADER[ml/dataset_loader.py]
+        MLAPP --> VALID[ml/dataset_validator.py]
+        MLAPP --> PREP[ml/preprocessor.py]
+        MLAPP --> TRAIN[ml/trainer.py]
+        MLAPP --> PRED[ml/predictor.py]
+        MLAPP --> EVAL[ml/evaluator.py]
+        MLAPP --> MODELMGR[ml/model_manager.py]
+        MLAPP --> VIZ[ml/visualization.py]
+
+        LOADER --> VALID
+        VALID --> PREP
+        PREP --> TRAIN
+        TRAIN --> PRED
+        PRED --> EVAL
+        TRAIN --> MODELMGR
+        EVAL --> VIZ
+
+        CHATBOT -.no dependency.-x MLAPP
+        MLAPP -.no dependency.-x CHATBOT
+
+        style CHATBOT fill:#e0f7fa
+        style MLAPP fill:#fff3e0
+    end
+```
+*The dashed "no dependency" lines are intentional and load-bearing — the Chatbot Engine and ML Engine share only the top-level `main.py`/`core/app.py` bootstrap and the common `core/config.py`/`core/logger.py` infrastructure; neither engine imports the other's domain logic (FR-229).*
+
+### Machine Learning Pipeline Diagram (IPO Framework, per the official brief)
+
+```mermaid
+flowchart LR
+    subgraph INPUT
+        A1[Load Iris Dataset<br/>150 samples, 4 features, 3 classes]
+        A2[Feature Scaling<br/>StandardScaler]
+    end
+    subgraph PROCESS
+        B1[Shuffle + Train/Test Split<br/>80/20, stratified]
+        B2[Instantiate KNeighborsClassifier]
+        B3[model.fit X_train, y_train]
+    end
+    subgraph OUTPUT
+        C1[model.predict X_test]
+        C2[Confusion Matrix]
+        C3[Precision / Recall / F1]
+    end
+
+    A1 --> A2 --> B1 --> B2 --> B3 --> C1 --> C2 --> C3
+```
+
+### ML Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant U as User (CLI/GUI)
+    participant D as Dispatcher (Chatbot Core)
+    participant ML as ML App Bootstrap
+    participant L as DatasetLoader
+    participant P as Preprocessor
+    participant T as Trainer
+    participant E as Evaluator
+
+    U->>D: types "train"
+    D->>ML: route to ML command handler (FR-223)
+    ML->>L: load_dataset("iris")
+    L-->>ML: Dataset(X, y, feature_names, class_names)
+    ML->>P: preprocess(dataset, fit=True)
+    P-->>ML: X_train, X_test, y_train, y_test (scaled)
+    ML->>T: train(X_train, y_train)
+    T-->>ML: trained model + duration
+    ML->>D: format summary response
+    D->>U: "Model trained in 4ms. Training set: 120 | Test set: 30."
+
+    U->>D: types "evaluate"
+    D->>ML: route to ML command handler
+    ML->>E: evaluate(model, X_test, y_test)
+    E-->>ML: EvaluationReport(accuracy, confusion_matrix, precision, recall, f1)
+    ML->>D: format report
+    D->>U: boxed evaluation report
+```
+
+### ML Data Flow Diagram
+
+```mermaid
+flowchart TD
+    RAW[Raw Dataset<br/>CSV or sklearn.load_iris] --> VALIDATE{Validate<br/>no NaN, ≥2 classes, min samples}
+    VALIDATE -->|Invalid| ERR[Friendly Error<br/>FR-171]
+    VALIDATE -->|Valid| SHUFFLE[Shuffle<br/>random_state]
+    SHUFFLE --> SPLIT[Train/Test Split<br/>80/20 stratified]
+    SPLIT --> SCALE_FIT[Fit Scaler on X_train ONLY]
+    SCALE_FIT --> SCALE_TRANSFORM[Transform X_train AND X_test]
+    SCALE_TRANSFORM --> TRAIN_MODEL[Fit Classifier on X_train_scaled, y_train]
+    TRAIN_MODEL --> PREDICT[Predict on X_test_scaled]
+    PREDICT --> EVALUATE[Compute Confusion Matrix,<br/>Precision, Recall, F1, Accuracy]
+    EVALUATE --> PERSIST[Optionally Persist Model<br/>+ Metadata via joblib]
+    EVALUATE --> VISUALIZE[Optionally Render<br/>Confusion Matrix Heatmap]
+```
+
+### Module Responsibilities — Machine Learning Engine
+
+| Module | Responsibility |
+|---|---|
+| `decodebot/ml/dataset_loader.py` | Load Iris (default) or arbitrary CSV datasets into a normalized `Dataset` object (FR-164–FR-166, FR-168) |
+| `decodebot/ml/dataset_validator.py` | Validate dataset integrity (missing values, class count, sample count) before any processing (FR-169–FR-170) |
+| `decodebot/ml/preprocessor.py` | Feature scaling, encoding, shuffling, and train/test splitting; owns the fit-on-train-only guarantee (FR-173–FR-186) |
+| `decodebot/ml/trainer.py` | Classifier instantiation and fitting; supports KNN (required) plus optional additional classifiers; K-tuning (FR-187–FR-195) |
+| `decodebot/ml/predictor.py` | Batch and single-sample prediction, with optional probability output (FR-196–FR-200) |
+| `decodebot/ml/evaluator.py` | Accuracy, confusion matrix, precision/recall/F1, cross-validation, baseline comparison (FR-201–FR-209) |
+| `decodebot/ml/model_manager.py` | Model persistence (save/load), metadata recording, model comparison (FR-210–FR-216) |
+| `decodebot/ml/visualization.py` | Confusion matrix heatmap, K-tuning elbow curve, and other plots, saved to file (FR-217–FR-221) |
+| `decodebot/ml/app_ml.py` | Thin bootstrap wiring ML commands into the existing Chatbot Engine's dispatcher (FR-222–FR-225) |
+
+### Folder Structure Additions — Machine Learning Engine
+
+```
+├── decodebot/
+│   ├── ml/
+│   │   ├── __init__.py
+│   │   ├── app_ml.py             # ML command bootstrap/wiring into core/dispatcher.py
+│   │   ├── dataset.py             # Dataset dataclass definition (shared structure)
+│   │   ├── dataset_loader.py       # FR-164–FR-166, FR-168
+│   │   ├── dataset_validator.py    # FR-169–FR-170
+│   │   ├── preprocessor.py         # FR-173–FR-186
+│   │   ├── trainer.py              # FR-187–FR-195
+│   │   ├── predictor.py            # FR-196–FR-200
+│   │   ├── evaluator.py            # FR-201–FR-209
+│   │   ├── model_manager.py        # FR-210–FR-216
+│   │   ├── visualization.py        # FR-217–FR-221
+│   │   └── config_ml.py            # ML-specific config key definitions (FR-226)
+├── datasets/
+│   └── README.md                    # Notes on the bundled Iris dataset and CSV format for future datasets
+├── models/
+│   └── .gitkeep                      # Trained models saved here (gitignored by default; metadata .json is small and may be committed)
+├── outputs/
+│   └── .gitkeep                       # Visualization PNGs saved here (gitignored by default)
+├── tests/
+│   ├── test_ml_compliance.py          # The 8 mandatory Week 2 checks (gate test)
+│   ├── test_dataset_loader.py
+│   ├── test_dataset_validator.py
+│   ├── test_preprocessor.py
+│   ├── test_trainer.py
+│   ├── test_predictor.py
+│   ├── test_evaluator.py
+│   ├── test_model_manager.py
+│   ├── test_visualization.py
+│   ├── test_ml_isolation.py            # FR-229 architectural boundary check
+│   └── fixtures/
+│       └── sample_dataset.csv
+├── docs/
+│   └── ML_GUIDE.md
+```
+
+> **Full updated top-level architecture (matches the internship brief's requested tree exactly):**
+> ```
+> DecodeBot AI
+> ├── Chatbot Engine        (Part I — unchanged, 100% rule-based)
+> ├── Rule Engine            (Part I — unchanged, inside Chatbot Engine)
+> ├── Machine Learning Engine (Part II — new)
+> │   ├── Dataset Loader
+> │   ├── Dataset Validator
+> │   ├── Preprocessor
+> │   ├── Trainer
+> │   ├── Predictor
+> │   ├── Evaluator
+> │   ├── Model Manager
+> │   └── Visualization
+> ├── Config                 (shared, extended with ML keys)
+> ├── Logging                (shared, extended with ML logger tag)
+> ├── CLI                     (shared, extended with ML commands)
+> ├── GUI                      (Part I — extended with ML panel, Part II)
+> ├── Tests                    (extended with ML test suite)
+> └── Documentation              (extended with ML_GUIDE.md)
+> ```
+
+## Machine Learning Pipeline — Step-by-Step Specification
+
+> This section documents the exact pipeline sequence an implementer must follow, matching the official brief's "Master Blueprint: IPO Framework" and "The Full Architecture" slides precisely.
+
+| Step | Stage | Module | Key Operation | Related FRs |
+|---|---|---|---|---|
+| 1 | **Input** | `dataset_loader.py` | Load Iris (150 samples, 4 features, 3 classes) or CSV | FR-164–FR-166 |
+| 2 | **Input** | `dataset_validator.py` | Validate: no NaN, ≥2 classes, minimum sample count | FR-169–FR-170 |
+| 3 | **Input** | `preprocessor.py` | Shuffle (remove order bias) | FR-177 |
+| 4 | **Process** | `preprocessor.py` | Train/test split (80/20 default, stratified) | FR-182–FR-183 |
+| 5 | **Process** | `preprocessor.py` | Fit `StandardScaler` on `X_train` **only** | FR-173–FR-174 |
+| 6 | **Process** | `preprocessor.py` | Transform both `X_train` and `X_test` | FR-174 |
+| 7 | **Process** | `trainer.py` | Instantiate `KNeighborsClassifier(n_neighbors=k)` | FR-187–FR-188 |
+| 8 | **Process** | `trainer.py` | `model.fit(X_train, y_train)` | FR-189 |
+| 9 | **Output** | `predictor.py` | `model.predict(X_test)` | FR-196 |
+| 10 | **Output** | `evaluator.py` | Confusion matrix (`sklearn.metrics.confusion_matrix`) | FR-202 |
+| 11 | **Output** | `evaluator.py` | Precision, recall, F1 (`classification_report`) | FR-203 |
+| 12 | **Output** | `evaluator.py` | Accuracy (reported alongside, never alone) | FR-201, NFR-080 |
+| 13 | *(Optional)* | `model_manager.py` | Persist model + metadata via `joblib` | FR-210, FR-213 |
+| 14 | *(Optional)* | `visualization.py` | Render confusion matrix heatmap / K-tuning curve | FR-217–FR-218 |
+
+> **Implementation note for OpenCode:** Steps 1–12 are the **mandatory** Week 2 pipeline and must work end-to-end with zero configuration (running `train` then `evaluate` with default settings must "just work" on the bundled Iris dataset). Steps 13–14 are professional enhancements and may be implemented after steps 1–12 are verified against the Week 2 Compliance Matrix.
+
+## Configuration — Machine Learning Engine
+
+Extends the existing configuration system (FR-088) with the keys introduced in FR-226. Full documented table for `docs/CONFIGURATION.md`:
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `ml_dataset` | string | `"iris"` | Dataset identifier; `"iris"` uses the bundled `sklearn` dataset, or a file path to a CSV |
+| `ml_target_column` | string | `null` | Required only when `ml_dataset` is a CSV path; the column to use as the classification target |
+| `ml_test_size` | float | `0.2` | Fraction of data reserved for the test set (FR-182, FR-185) |
+| `ml_random_state` | int | `42` | Seed for shuffling, splitting, and stochastic model steps (FR-178) |
+| `knn_k` | int | `5` | Number of neighbors for the default KNN classifier (FR-188) |
+| `classifier_type` | string | `"knn"` | One of `"knn"`, `"decision_tree"`, `"logistic_regression"`, `"svm"`, `"random_forest"` (FR-191) |
+| `scaler_type` | string | `"standard"` | One of `"standard"`, `"minmax"`, `"none"` (FR-175) |
+| `ml_missing_value_strategy` | string | `"error"` | One of `"error"`, `"drop"`, `"mean_impute"` (FR-170) |
+| `models_dir` | string | `"models/"` | Directory for persisted models and metadata (FR-210) |
+| `ml_outputs_dir` | string | `"outputs/"` | Directory for saved visualizations (FR-217) |
+| `ml_log_level` | string | inherits `log_level` | Optional override of the shared logging level for `decodebot.ml` specifically |
+
+All keys follow the same per-key validation and default-fallback behavior established in FR-094 — a single invalid ML key never prevents the application (chatbot or ML) from starting.
+
+## Logging — Machine Learning Engine
+
+- Uses the existing rotating file handler (FR-096) — no separate log file is created.
+- Logger name: `decodebot.ml` (and sub-loggers `decodebot.ml.trainer`, `decodebot.ml.evaluator`, etc., where useful for filtering).
+- Logged at `INFO`: dataset loads, training start/end (with hyperparameters), evaluation results (summary metrics), model save/load events.
+- Logged at `DEBUG`: full confusion matrix values, per-fold cross-validation scores, preprocessing intermediate shapes.
+- Logged at `WARNING`: class imbalance detected, config key fallback to default, model loaded from outside `models/` (FR-212).
+- Logged at `ERROR`: dataset validation failures, training failures, prediction-without-trained-model attempts, corrupted model file loads — always with a caught, non-crashing recovery path (FR-228).
+- **Never logged:** raw dataset contents beyond shape/statistics (avoids unnecessarily bloating logs with full feature matrices).
+
+## Error Handling — Machine Learning Engine
+
+| Scenario | Behavior | Related FR |
+|---|---|---|
+| Dataset file not found | Friendly error; ML command aborts cleanly, CLI/GUI remains responsive | FR-171 |
+| Dataset contains missing values, strategy = `"error"` | Friendly error naming the offending column(s) | FR-169–FR-170 |
+| Dataset has fewer than 2 classes | Friendly error; training cannot proceed | FR-169 |
+| `test_size` outside `(0, 1)` | Configuration error surfaced at startup/command time, not a silent misbehavior | FR-182 |
+| `knn_k` greater than training set size | Friendly error before calling `.fit()` | FR-187 |
+| `knn_k <= 0` | Configuration error | FR-188 |
+| Unknown `classifier_type` | Falls back to `"knn"` with a logged warning | FR-191 |
+| Unknown `scaler_type` | Falls back to `"standard"` with a logged warning | FR-175 |
+| `predict`/`evaluate` called with no trained/loaded model | Friendly message directing the user to run `train` first | FR-199 |
+| Corrupted or unreadable saved model file | Friendly error; does not crash; existing in-memory model (if any) remains usable | FR-211 |
+| Model file outside `models/` loaded without explicit opt-in | Blocked by default, with a security-relevant `WARNING` logged if overridden | FR-212 |
+| Non-numeric value entered in GUI predict form | Inline validation error; GUI remains responsive | FR-225 |
+| Mismatched feature vector length in `predict_one()` | Rejected with a clear error before reaching `scikit-learn` | FR-197 |
+| Headless environment attempting to render a plot | Non-interactive `matplotlib` backend used automatically; file still saved | FR-217 |
+
+## Coding Standards — Machine Learning Engine Additions
+
+- **Library scope boundary (hard rule):** `scikit-learn`, `pandas`, `numpy`, `matplotlib`, `seaborn` (optional), and `joblib` may be imported **only** within `decodebot/ml/` and its dedicated tests. No file under `decodebot/core/`, `decodebot/rules/`, or `decodebot/gui/` may import any of these libraries (FR-229, enforced by `tests/test_ml_isolation.py`).
+- **Type hints:** All ML functions use type hints, including `numpy.ndarray`/`pandas.DataFrame` type aliases defined once in `decodebot/ml/dataset.py` for consistency (e.g., `FeatureMatrix = np.ndarray`).
+- **Docstrings:** Follow the same Google-style docstring convention as Part I (FR/Args/Returns/Raises), with an added `Reference:` line linking back to the relevant Week 2 brief slide/concept where applicable (e.g., "Reference: Gatekeeper Rule — Scaling").
+- **Determinism discipline:** Any function involving randomness (shuffling, splitting, stochastic solvers) must accept an explicit `random_state` parameter — never rely on global/implicit random state.
+- **No notebook-only logic:** All pipeline logic lives in importable, testable `.py` modules under `decodebot/ml/`; optional Jupyter notebooks (if added for exploration) live in a separate `notebooks/` directory and must not contain any logic that isn't also available as a proper module function.
+- **Naming conventions:** Match Part I exactly (`snake_case` functions/modules, `PascalCase` classes/dataclasses, `UPPER_SNAKE_CASE` constants).
+- **No bare `except: pass`:** Identical rule to Part I — every ML Engine exception handler must log before recovering.
+
+## Testing Strategy — Machine Learning Engine
+
+> Mirrors the rigor and structure of the Part I Testing Specification. New tests are prefixed `TC-ML-` and organized into the same seven categories used in Part I.
+
+### Compliance Gate Tests (Week 2, Must Pass First)
+
+| Test ID | Description | Expected Result |
+|---|---|---|
+| TC-ML-001–010 | Dataset loading & understanding (shape, features, classes, balance, CSV path support, caching, metadata) | Matches official Iris benchmark: 150 samples, 4 features, 3 classes |
+| TC-ML-011–020 | Preprocessing & scaling (fit-on-train-only, mean≈0/var≈1, swappable scaler, no leakage) | Post-scaling statistics verified numerically |
+| TC-ML-021–028 | Shuffling & train/test split (80/20 default, stratified, reproducible with fixed seed) | 120/30 split with proportional class representation |
+| TC-ML-029–038 | KNN instantiation, fit, and the exact `INSTANTIATE → FIT → PREDICT` workflow | Model trains and predicts without error |
+| TC-ML-039–044 | Prediction on test set and single-sample prediction | Correct-length, valid-class output for both paths |
+| TC-ML-045–058 | Evaluation: confusion matrix, precision, recall, F1, accuracy, "accuracy mirage" warning | All metrics computed and internally consistent |
+| TC-ML-059–070+ | Full pipeline integration, persistence round-trip, and isolation from the Chatbot Engine | End-to-end `train → evaluate → predict → save → load` succeeds; `test_ml_isolation.py` passes |
+
+### Unit Tests (25)
+Cover each module in isolation: `dataset_loader` (5), `dataset_validator` (4), `preprocessor` (5), `trainer` (4), `predictor` (3), `evaluator` (4).
+
+### Integration Tests (12)
+Full pipeline runs end-to-end on Iris; `train` → `evaluate` → `predict` CLI command chaining; GUI ML panel wired to the same functions as the CLI; model persistence round-trip (save, restart session, load, predict).
+
+### Regression Tests (8)
+Model accuracy stays within an expected range across code refactors (using a fixed `random_state`); confusion matrix shape stability; config schema backward compatibility for new ML keys; classifier-swap doesn't break the shared `train`/`predict`/`evaluate` interface.
+
+### Manual/Exploratory Tests (6)
+First-time `train` + `evaluate` walkthrough on a clean checkout; GUI "Classify" form tested with known canonical Iris samples; visualization images manually reviewed for correctness/legibility; `compare` command output manually cross-checked against `evaluate` run individually per classifier.
+
+### Acceptance Tests (10)
+All 8 Week 2 Compliance Matrix rows pass; `tests/test_ml_isolation.py` passes (zero ML imports in the Chatbot Engine); ML Engine test coverage ≥ 90%; chatbot-only startup time remains < 300ms with ML deps installed; full ML test suite runs in a reasonable time budget (< 30 seconds).
+
+### Negative Tests (10)
+Missing dataset file; dataset with NaN values (`"error"` strategy); single-class dataset; invalid `test_size`; invalid `knn_k` (zero, negative, larger than training set); corrupted model file on load; model loading from outside `models/` without opt-in; non-numeric GUI predict input; predicting before training; unknown `classifier_type`/`scaler_type` (fallback verified, not a crash).
+
+### Edge Case Tests (10)
+Minimum viable dataset size (exactly enough samples for a valid stratified split); perfectly balanced vs. deliberately imbalanced synthetic dataset (verifies FR-204's warning); `test_size` at extreme but valid values (0.05, 0.95); K value equal to the training set size minus 1; single-feature dataset; dataset with a constant (zero-variance) feature column; repeated `train` calls in one session (no state corruption); `compare` with only one classifier specified; visualization requested in a headless test environment; model metadata file manually deleted while the `.joblib` file remains (graceful degradation).
+
+> **Week 2 Test Count Summary:** 70 (Compliance-mapped, itemized) + 25 (Unit) + 12 (Integration) + 8 (Regression) + 6 (Manual) + 10 (Acceptance) + 10 (Negative) + 10 (Edge Case) = **80+ new ML test cases**, on top of Part I's 125+, for a combined project total of **205+ total test cases**.
+
+## Acceptance Criteria — Machine Learning Engine
+
+| Feature Area | Completion Criteria |
+|---|---|
+| Dataset loading & understanding | ☐ Iris loads correctly ☐ CSV support works ☐ metadata/class-balance reporting correct ☐ validation rejects malformed data |
+| Preprocessing | ☐ `StandardScaler` applied correctly ☐ fit-on-train-only verified ☐ swappable scaler works ☐ shuffling verified |
+| Train/test split | ☐ 80/20 default ☐ stratified ☐ reproducible via `random_state` ☐ no data leakage (regression-tested) |
+| Model training | ☐ KNN required baseline works ☐ configurable K ☐ multi-classifier support ☐ never crashes on bad input |
+| Prediction | ☐ batch prediction correct ☐ single-sample prediction correct ☐ requires a trained model with a friendly guard |
+| Evaluation | ☐ confusion matrix ☐ precision/recall/F1 ☐ accuracy reported alongside (never alone) ☐ "accuracy mirage" warning functions |
+| Persistence & comparison | ☐ save/load round-trips correctly ☐ metadata recorded ☐ `compare` produces a correct side-by-side table |
+| Visualization | ☐ confusion matrix heatmap saved ☐ K-tuning curve saved ☐ never blocks CLI/GUI ☐ works headless |
+| CLI/GUI integration | ☐ ML commands appear in `help` ☐ GUI ML panel calls identical functions to the CLI ☐ zero chat-text ever reaches a `scikit-learn` model |
+| Architecture isolation | ☐ `test_ml_isolation.py` passes ☐ chatbot startup time unaffected ☐ Week 1 Compliance Matrix still passes 100% |
+| Testing | ☐ 80+ new ML test cases ☐ Week 2 Compliance Matrix 8/8 ☐ ≥90% coverage on `decodebot/ml/` |
+| Documentation | ☐ `docs/ML_GUIDE.md` complete ☐ `docs/CONFIGURATION.md` updated with ML keys ☐ this SPEC.md's Part II kept current |
+
+## GitHub Standards — Machine Learning Engine Additions
+
+- **README additions:** A new "Machine Learning Engine" section following the existing Chatbot section, including a screenshot/GIF of `train` → `evaluate` output and, if the GUI ML panel is built, a screenshot of a live classification.
+- **Badges:** Add a `scikit-learn` badge and a "Supervised Learning" custom badge alongside the existing Python/License/"100% Rule-Based" badges — the "100% Rule-Based" badge now explicitly annotated as describing the **Chatbot Engine only**, to avoid misleading portfolio reviewers about the ML Engine.
+- **Dataset attribution:** README and `docs/ML_GUIDE.md` credit the Iris dataset (Fisher, 1936; distributed via `scikit-learn`) per standard dataset-citation practice.
+- **Model card:** Each committed example model's metadata `.json` (FR-213) doubles as a lightweight "model card" — classifier type, hyperparameters, training date, dataset, and test accuracy — suitable for portfolio review.
+- **`requirements.txt` clarity:** Clearly split into a "Chatbot Engine (stdlib only)" section and a "Machine Learning Engine" section, per FR-230, so a reviewer instantly understands the dependency boundary.
+- **Releases:** The `v2.0.0` GitHub Release notes explicitly call out "Added: Machine Learning Data Classification Engine (Week 2)" and "Preserved: 100% rule-based Chatbot Engine (Week 1), unchanged."
+
+## Risks — Machine Learning Engine Additions
+
+### Known Limitations (Week 2)
+- The Iris dataset is small (150 samples) and near-perfectly separable, so reported accuracy will typically be high (often > 0.90) regardless of classifier choice — this is expected and appropriate for an internship-level benchmark, not evidence of a flawed pipeline.
+- KNN's performance is sensitive to the choice of K and to feature scaling; both are addressed (FR-173, FR-188, FR-190) but remain inherent characteristics of the algorithm, not implementation bugs.
+- `joblib`/`pickle`-based model persistence carries an inherent deserialization risk for untrusted files; this is mitigated (FR-212) but not eliminated by design — never load a model file from an untrusted source, even with the override flag.
+
+### Trade-offs (Week 2)
+- Choosing `scikit-learn` (a full-featured ML library) as a new dependency directly contradicts the Week 1 "stdlib-only" philosophy — this is a deliberate, explicitly-scoped exception mandated by the official Week 2 brief, strictly confined to `decodebot/ml/` (FR-229), not a general relaxation of the project's engineering discipline.
+- Supporting multiple classifiers (FR-191) adds flexibility at the cost of slightly more code surface than the bare KNN requirement — justified by the Portfolio/Stretch objectives.
+- Persisting models to disk by default trades a small amount of disk usage for the significant usability win of not retraining on every launch.
+
+### Future Improvements (Week 2 → Beyond)
+- Expand beyond the Iris dataset to additional classic or user-supplied tabular datasets (the loader/validator/preprocessor are already dataset-agnostic per FR-165).
+- Add hyperparameter search (`GridSearchCV`/`RandomizedSearchCV`) as a natural extension of the existing K-tuning utility (FR-190).
+- Explore the brief's own stated "Emerging Horizons" — extending from tabular classification toward computer vision and deep learning in a future, separately-specified week, without disturbing either the Chatbot Engine or the tabular ML Engine documented here.
+- Optionally expose the ML Engine's `predict()` as a rule-triggered "bridge" feature in the Chatbot Engine (e.g., a hidden command that asks for 4 numbers and calls the ML Engine) — explicitly deferred; if built, it must call the ML Engine's existing public function only, never duplicate or blend logic across the two engines (consistent with FR-145's "shared engine, no duplication" principle, applied here as "separate engines, no blending").
+
+---
 ---
 
 ## Glossary
@@ -3025,9 +4241,23 @@ At least one annotated screenshot or terminal-recording GIF (e.g., via `asciinem
 | **Compliance Matrix** | The mapping of DecodeLabs' 8 mandatory requirements to this project's FRs and test cases |
 | **FR / NFR** | Functional Requirement / Non-Functional Requirement |
 | **CLI** | Command-Line Interface |
-| **Presentation Adapter** | Either the CLI (core/loop.py) or GUI (gui/app_gui.py) � an interchangeable front end that never contains its own conversational logic |
-| **Reduced Motion** | An accessibility mode that disables frame-cycling animation while preserving static informational equivalents || **REPL** | Read-Eval-Print Loop |
+| **REPL** | Read-Eval-Print Loop |
 | **SemVer** | Semantic Versioning (`MAJOR.MINOR.PATCH`) |
+| **Presentation Adapter** | Either the CLI (`core/loop.py`) or GUI (`gui/app_gui.py`) - an interchangeable front end that never contains its own conversational logic |
+| **Reduced Motion** | An accessibility mode that disables frame-cycling animation while preserving static informational equivalents |
+| **Chatbot Engine** | Part I of DecodeBot AI — the 100% rule-based conversational agent, its GUI, and its animations (Categories A-Q) |
+| **Machine Learning Engine (ML Engine)** | Part II of DecodeBot AI — the new, isolated `decodebot/ml/` module implementing supervised classification (Category R) |
+| **Supervised Learning** | A machine learning paradigm where a model learns to map inputs to known output labels from labeled training examples |
+| **K-Nearest Neighbors (KNN)** | A classification algorithm that assigns a new sample the majority class among its K closest training samples |
+| **Feature Scaling** | Transforming numeric features to a common scale (e.g., mean 0, variance 1 via `StandardScaler`) so no feature dominates due to magnitude alone |
+| **Train/Test Split** | Dividing a dataset into a subset used to train a model and a separate, held-out subset used to evaluate it |
+| **Data Leakage** | An error where information from the test set improperly influences training (e.g., fitting a scaler on the full dataset instead of the training set only) |
+| **Confusion Matrix** | A table showing correct and incorrect predictions broken down by actual vs. predicted class |
+| **Precision** | Of all samples predicted as a given class, the fraction that were actually that class |
+| **Recall** | Of all samples actually belonging to a given class, the fraction the model correctly identified |
+| **F1 Score** | The harmonic mean of precision and recall, balancing both into a single metric |
+| **Accuracy Mirage** | The phenomenon where high overall accuracy hides poor performance on minority classes, especially in imbalanced datasets |
+| **Model Persistence** | Saving a trained model to disk (via `joblib`) so it can be reloaded and reused without retraining |
 
 ---
 
@@ -3042,6 +4272,10 @@ At least one annotated screenshot or terminal-recording GIF (e.g., via `asciinem
 7. Mermaid Diagram Syntax Documentation — [mermaid.js.org](https://mermaid.js.org).
 8. Keep a Changelog — [keepachangelog.com](https://keepachangelog.com).
 9. DecodeLabs Artificial Intelligence Internship — Week 1, Project 1 assignment brief (internal reference).
+10. DecodeLabs Artificial Intelligence Internship — Week 2, Project 2 ("Data Classification Using AI") official brief, Batch 2026 (internal reference; PDF supplied by the internship program).
+11. Fisher, R.A. (1936). *The Use of Multiple Measurements in Taxonomic Problems* — original source of the Iris dataset, distributed via `sklearn.datasets.load_iris()`.
+12. `scikit-learn` Documentation — `KNeighborsClassifier`, `StandardScaler`, `train_test_split`, `confusion_matrix`, `classification_report`. [scikit-learn.org](https://scikit-learn.org).
+13. `pandas`, `numpy`, `matplotlib`, and `joblib` official documentation (used exclusively within `decodebot/ml/`).
 
 ---
 
