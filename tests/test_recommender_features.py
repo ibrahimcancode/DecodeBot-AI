@@ -186,6 +186,14 @@ class TestInputFormsAndLabels:
         result = parse_skills(["Python", "Machine Learning", "SQL"])
         assert list(result.skills) == ["python", "machine learning", "sql"]
 
+    def test_collection_blank_element_skipped(self):
+        result = parse_skills(["Python", "", "SQL", "ML"])
+        assert list(result.skills) == ["python", "sql", "machine learning"]
+
+    def test_collection_comma_item_splits_like_csv_cell(self):
+        result = parse_skills(["Python", "SQL, ML", "Docker"])
+        assert list(result.skills) == ["python", "sql", "machine learning", "docker"]
+
     def test_skillset_input(self):
         skills = SkillSet(("Python", "SQL", "ML"))
         result = parse_skills(skills)
@@ -327,6 +335,15 @@ class TestUnknownSkillBehavior:
     def test_is_zero_vector_none(self):
         assert is_zero_vector(None)
 
+    def test_is_zero_vector_dense_zero_list(self):
+        assert is_zero_vector([0.0, 0.0, 0.0])
+
+    def test_is_zero_vector_dense_nonzero_list(self):
+        assert not is_zero_vector([0.0, 1.0, 0.0])
+
+    def test_is_zero_vector_dense_empty_list(self):
+        assert is_zero_vector([])
+
 
 class TestEmptyVocabulary:
     def test_empty_corpus_raises(self):
@@ -347,6 +364,22 @@ class TestEmptyVocabulary:
 
     def test_empty_vocabulary_is_feature_error(self):
         assert issubclass(EmptyVocabularyError, FeatureExtractionError)
+
+    def test_fit_succeeding_with_empty_feature_names_raises(self, monkeypatch):
+        class _EmptyVocabVectorizer:
+            def __init__(self, lowercase=True, max_features=None):
+                pass
+
+            def fit_transform(self, texts):
+                return None
+
+            def get_feature_names_out(self):
+                return []
+
+        monkeypatch.setattr(features_module, "_import_vectorizer", lambda: _EmptyVocabVectorizer)
+        with pytest.raises(EmptyVocabularyError) as excinfo:
+            build_feature_pipeline(builtin_corpus())
+        assert "no skills could be matched" in str(excinfo.value)
 
 
 class TestNoModuleScopeFitting:

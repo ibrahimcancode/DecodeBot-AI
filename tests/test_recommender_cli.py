@@ -193,6 +193,31 @@ class TestCliOutput:
         text = app_recommender.render_outcome(outcome, plain=False)
         assert "\u250c" in text
 
+    def test_render_fallback_plain_helper(self):
+        from decodebot.recommender.result import RecommendationOutcome, STATUS_GUIDANCE
+
+        outcome = RecommendationOutcome(
+            results=(),
+            status=STATUS_GUIDANCE,
+            message="Guidance message",
+        )
+        text = app_recommender.render_outcome(outcome, plain=True)
+        assert text == "Guidance message"
+        for char in BOX_CHARS:
+            assert char not in text
+
+    def test_render_fallback_boxed_helper(self):
+        from decodebot.recommender.result import RecommendationOutcome, STATUS_ZERO_MATCH
+
+        outcome = RecommendationOutcome(
+            results=(),
+            status=STATUS_ZERO_MATCH,
+            message="Zero match message",
+        )
+        text = app_recommender.render_outcome(outcome, plain=False)
+        assert "Zero match message" in text
+        assert "\u250c" in text
+
 
 class TestPlainFlag:
     """FR-133: --plain on the command line flips plain_mode."""
@@ -290,6 +315,12 @@ class TestSkillsParsing:
 
     def test_empty_flag_returns_none(self):
         assert app_recommender._extract_skills_arg("recommend --skills") is None
+
+    def test_none_raw_returns_none(self):
+        assert app_recommender._extract_skills_arg(None) is None
+
+    def test_empty_raw_returns_none(self):
+        assert app_recommender._extract_skills_arg("") is None
 
 
 class TestCustomCorpusViaConfig:

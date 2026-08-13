@@ -41,6 +41,7 @@ from decodebot.recommender import (
     zero_match_outcome,
 )
 from decodebot.recommender import corpus as corpus_module
+from decodebot.recommender import ranker as ranker_module
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -143,6 +144,21 @@ class TestClampTopN:
 
     def test_non_integer_falls_back_to_default(self):
         assert clamp_top_n("nonsense", 24) == DEFAULT_TOP_N
+
+
+class TestThresholdNormalization:
+    def test_non_numeric_threshold_disables(self):
+        assert ranker_module._normalize_threshold("nonsense") == 0.0
+
+    def test_none_threshold_disables(self):
+        assert ranker_module._normalize_threshold(None) == 0.0
+
+    def test_negative_or_zero_threshold_disables(self):
+        assert ranker_module._normalize_threshold(0.0) == 0.0
+        assert ranker_module._normalize_threshold(-0.5) == 0.0
+
+    def test_positive_threshold_preserved(self):
+        assert ranker_module._normalize_threshold(0.3) == 0.3
 
 
 class TestDeterminism:

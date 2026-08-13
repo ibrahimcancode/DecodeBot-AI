@@ -9,6 +9,7 @@ structured data model: ``CareerProfile``/``SkillSet``/``RecommendationResult``).
 Reference: SPEC.md Part III — FR-236, FR-237, FR-238.
 """
 
+import csv
 import os
 
 import pytest
@@ -303,6 +304,31 @@ class TestCsvLoading:
             load_csv_corpus(str(path))
         assert "UTF-8" in str(excinfo.value)
 
+    def test_os_error_opening_csv_raises_load_error(self, tmp_path, monkeypatch):
+        path = _write_csv(tmp_path, VALID_CSV)
+        real_open = open
+
+        def _raise_on_target(file, *args, **kwargs):
+            if os.fspath(file) == path:
+                raise OSError("simulated disk failure")
+            return real_open(file, *args, **kwargs)
+
+        monkeypatch.setattr("builtins.open", _raise_on_target)
+        with pytest.raises(CorpusLoadError) as excinfo:
+            load_csv_corpus(path)
+        assert "Couldn't open" in str(excinfo.value)
+
+    def test_csv_error_parsing_raises_load_error(self, tmp_path, monkeypatch):
+        path = _write_csv(tmp_path, VALID_CSV)
+
+        def _raise_reader(*args, **kwargs):
+            raise csv.Error("simulated csv failure")
+
+        monkeypatch.setattr(csv, "reader", _raise_reader)
+        with pytest.raises(CorpusLoadError) as excinfo:
+            load_csv_corpus(path)
+        assert "Couldn't parse" in str(excinfo.value)
+
 
 class TestErrorHierarchy:
     """FR-238: structured exception hierarchy for corpus failures."""
@@ -438,6 +464,13 @@ class TestValidateCorpus:
         object.__setattr__(profile, "title", "  ")
         with pytest.raises(CorpusValidationError):
             validate_corpus([profile, _profile("Data Scientist", "Python, ML")])
+
+    def test_rejects_profile_with_no_skills(self):
+        profile = _profile("Backend Developer", "Python")
+        object.__setattr__(profile, "skills", SkillSet.from_list([]))
+        with pytest.raises(CorpusValidationError) as excinfo:
+            validate_corpus([profile, _profile("Data Scientist", "Python, ML")])
+        assert "has no skills" in str(excinfo.value)
 
 
 class TestCorpusContainer:
