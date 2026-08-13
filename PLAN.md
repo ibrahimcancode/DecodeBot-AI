@@ -1,23 +1,25 @@
 # PLAN.md — DecodeBot AI Implementation Plan
 
-> **Companion document to `SPEC.md` (v2.0.0).** This file translates the specification into a strict, ordered, dependency-safe build sequence for an AI coding agent (OpenCode) to execute. It introduces **zero new requirements** — every task below cites the exact FR/NFR/Test ID it implements or verifies in `SPEC.md`. If any instruction here appears to conflict with `SPEC.md`, **`SPEC.md` is authoritative** and this plan must be corrected to match it, never the reverse.
+> **Companion document to `SPEC.md` (v3.0.0).** This file translates the specification into a strict, ordered, dependency-safe build sequence for an AI coding agent (OpenCode) to execute. It introduces **zero new requirements** — every task below cites the exact FR/NFR/Test ID it implements or verifies in `SPEC.md`. If any instruction here appears to conflict with `SPEC.md`, **`SPEC.md` is authoritative** and this plan must be corrected to match it, never the reverse.
 >
-> **This plan now covers three linked phase groups:**
+> **This plan now covers five linked phase groups:**
 > - **Phases 0–13 — Chatbot Engine (Week 1, unchanged).** 100% rule-based conversational agent.
 > - **Phases 14–15 — GUI & Animation Layer (unchanged).** Optional Tkinter GUI and terminal animation effects, both reusing the Week 1 rule engine unchanged.
 > - **Phases 16–24 — Machine Learning Engine (Week 2, new).** A new, isolated `decodebot/ml/` module implementing supervised classification, per the official DecodeLabs Week 2 brief. **Only Phases 16–24 are permitted to use `scikit-learn`/`pandas`/`numpy`/`matplotlib`/`joblib`.** Phases 0–15 remain strictly stdlib-only.
+> - **Wave 3 — Content-Based Tech Stack Recommendation Engine (Week 3, PLANNED).** A new, isolated `decodebot/recommender/` package implementing content-based career/tech-stack recommendation (`FR-233`–`FR-248`, `NFR-086`–`NFR-090`, `NFR-096`). It reuses the Week 2 ML dependency scope (`FR-229`) inside `decodebot/recommender/` **only** — never in `decodebot/core/`, `decodebot/rules/`, or `decodebot/gui/`.
+> - **Wave 4 — OCR Image/Text Recognition Engine (Week 4, PLANNED and OPTIONAL-EXTENSION).** A new, isolated `decodebot/recognition/` package implementing local OCR via OpenCV + `pytesseract` (`FR-249`–`FR-262`, `NFR-091`–`NFR-095`, `NFR-097`). **Optional:** the project remains complete and gradeable without it; `opencv-python-headless` and `pytesseract` are optional dependencies installed only for this engine.
 >
-> If you are resuming an already-built Week 1 project, **skip directly to Phase 16** — Phases 0–15 describe already-completed work and are retained here only for full-history traceability. Do not re-run or redo them; verify their Definition of Done checklists still hold (nothing should have regressed), then proceed to Phase 16.
+> If you are resuming an already-built Week 1 project, **skip directly to Phase 16** — Phases 0–15 describe already-completed work and are retained here only for full-history traceability. Do not re-run or redo them; verify their Definition of Done checklists still hold (nothing should have regressed), then proceed to Phase 16. If Phases 16–24 are already complete, begin at **Wave 3 (W3-M1)**; Wave 4 (W4-M1) is optional and may be skipped entirely.
 
 ---
 
 ## How To Use This Plan
 
 1. Read `SPEC.md` in full before starting. Do not implement from memory of this plan alone.
-2. Execute phases **in order** (Phase 0 → Phase 24). Each phase has hard dependencies on the one before it — do not skip ahead. If Phases 0–15 are already complete (an existing Week 1 + GUI/Animation build), begin at Phase 16.
+2. Execute phases **in order** (Phase 0 → Phase 24 → Wave 3 → Wave 4). Each phase/milestone has hard dependencies on the one before it — do not skip ahead. If Phases 0–15 are already complete (an existing Week 1 + GUI/Animation build), begin at Phase 16. If Phases 16–24 are complete, begin at **W3-M1**. Wave 4 is optional and may be skipped entirely.
 3. After finishing each phase, run its listed test IDs before moving to the next phase. A phase is not "done" until its Definition of Done checklist is fully checked.
 4. **Phase 1 (Core Compliance MVP) is the single most important phase.** It alone must satisfy 100% of the DecodeLabs Internship Compliance Matrix in `SPEC.md`. Every later phase must be implemented such that it **never** weakens or overrides Phase 1 behavior (see `FR-121` — core rules are protected).
-5. **Phases 0–15 (Chatbot Engine, GUI, Animation):** never introduce a machine learning, deep learning, NLP, or LLM library, for any reason (`FR-009`, `NFR-016`, `CON-01`). **Phases 16–24 (ML Engine):** `scikit-learn`, `pandas`, `numpy`, `matplotlib`, and `joblib` are explicitly required and permitted, but **only** inside `decodebot/ml/` (`FR-229`) — never inside `decodebot/core/`, `decodebot/rules/`, or `decodebot/gui/`.
+5. **Phases 0–15 (Chatbot Engine, GUI, Animation):** never introduce a machine learning, deep learning, NLP, or LLM library, for any reason (`FR-009`, `NFR-016`, `CON-01`). **Phases 16–24 (ML Engine):** `scikit-learn`, `pandas`, `numpy`, `matplotlib`, and `joblib` are explicitly required and permitted, but **only** inside `decodebot/ml/` (`FR-229`) — never inside `decodebot/core/`, `decodebot/rules/`, or `decodebot/gui/`. **Wave 3 (Recommender):** reuses the same ML libraries **only** inside `decodebot/recommender/` (`FR-233`) — never inside `decodebot/core/`, `decodebot/rules/`, or `decodebot/gui/`. **Wave 4 (OCR):** `opencv-python-headless` and `pytesseract` are **optional** and permitted **only** inside `decodebot/recognition/` (`FR-249`, `FR-250`).
 6. Commit after each phase with a message referencing the phase name and FR range covered (e.g., `feat: Phase 3 - session state, history, statistics (FR-064–FR-079)`).
 
 ---
@@ -75,6 +77,19 @@ These apply across **every** phase, without exception:
 | 22 | ML Full Test Suite Completion | — (ML Testing Strategy) | Remaining `tests/test_*` ML files | 80+ ML tests pass; ≥90% coverage on `decodebot/ml/` |
 | 23 | ML Documentation & GitHub Packaging | — (GitHub Standards, Week 2) | `docs/ML_GUIDE.md`, README updates | Week 2 GitHub Standards checklist complete |
 | 24 | Final Week 2 Compliance & Acceptance Sign-off | All (Part II) | — | Every box in Week 2 Acceptance Criteria checked; Week 1 Compliance Matrix re-verified unaffected |
+| W3-M1 | Recommender Package & Dataset Foundation | FR-233, FR-236–FR-238 | `recommender/__init__.py`, `recommender/corpus.py`, `tests/test_wave3_isolation.py`, `tests/test_recommender_corpus.py` | Corpus loads (≥20 entries, ≥6 domains); isolation gate green |
+| W3-M2 | Input & Feature Extraction | FR-239–FR-241 | `recommender/normalization.py`, `recommender/features.py`, `tests/test_recommender_features.py` | Normalization equivalence + shared-vocabulary TF-IDF verified |
+| W3-M3 | Ranking Engine & Fallbacks | FR-242–FR-244 | `recommender/ranker.py`, `recommender/fallbacks.py`, `tests/test_recommender_ranker.py` | Cosine Top-N correct; cold-start/zero-match/partial-match handled |
+| W3-M4 | CLI Integration | FR-235, FR-239, FR-245, FR-247 | `recommender/app_recommender.py`, `recommender/result.py`, COMMANDS/dispatcher/config wiring, `tests/test_recommender_cli.py` | `recommend` in `help`; boxed output works; fuzz-green; startup < 300ms |
+| W3-M5 | GUI Career Recommender Tab | FR-246 | `gui/recommender_panel.py`, `gui/app_gui.py` update, `tests/test_gui_recommender.py` | GUI tab calls identical engine function as the CLI |
+| W3-M6 | Test Suite Completion | FR-248 (TC-REC-*) | Remaining `tests/test_recommender*.py` | All TC-REC-* pass; ≥90% coverage on `decodebot/recommender/` |
+| W3-M7 | Documentation & Final Wave 3 Sign-off | All Wave 3 (NFR-086–090, NFR-096) | `docs/RECOMMENDER_GUIDE.md`, README/CHANGELOG updates | Wave 3 Acceptance Criteria checked; Weeks 1–2 matrices unaffected |
+| W4-M1 | Recognition Package & Image Ingestion | FR-249, FR-252 | `recognition/__init__.py`, `recognition/ingestor.py`, `recognition/result.py`, `tests/test_wave4_isolation.py`, `samples/`, `requirements-ocr.txt` | Ingestion bounds work; isolation gate green |
+| W4-M2 | Preprocessing Pipeline | FR-253 | `recognition/preprocess.py`, `tests/test_recognition_preprocess.py` | Grayscale/blur/deskew/threshold verified headless |
+| W4-M3 | Tesseract OCR Engine | FR-254–FR-255 | `recognition/ocr_engine.py`, `tests/test_recognition_ocr.py` | Fixture image extracts expected words; missing-dep handled |
+| W4-M4 | Confidence Filtering & Output | FR-256–FR-258 | `recognition/filter.py`, finalize `recognition/result.py`, `tests/test_recognition_filter.py`, `tests/test_recognition_output.py` | 80% threshold + statuses + `--save` no-overwrite verified |
+| W4-M5 | CLI & GUI Integration | FR-251, FR-259–FR-260 | `recognition/app_recognition.py`, `gui/recognition_panel.py`, COMMANDS/dispatcher/config wiring, `docs/CONFIGURATION.md` update, `tests/test_recognition_cli.py`, `tests/test_gui_recognition.py` | `recognize` in `help`; CLI/GUI parity; startup < 300ms |
+| W4-M6 | Testing, Documentation & Final Sign-off | FR-261–FR-262 (TC-OCR-*), NFR-091–095, NFR-097 | Remaining `tests/test_recognition*.py`, `docs/OCR_GUIDE.md`, README/CHANGELOG updates | All TC-OCR-* pass; privacy + isolation green; Wave 4 Acceptance Criteria checked |
 
 
 ---
@@ -669,6 +684,218 @@ decodebot-ai/
 
 **Suggested Commit Message:** `release: v2.0.0 - Week 2 Machine Learning Engine complete, Week 1 preserved`
 
+---
+
+## Wave 3 (Week 3) — Content-Based Tech Stack Recommendation Engine (PLANNED)
+
+> **Status: PLANNED.** This Wave must NOT be started until (a) Phases 16–24 (Week 2) are complete and verified, and (b) the user explicitly approves starting Wave 3. It implements `SPEC.md → Part III` (`FR-233`–`FR-248`, `NFR-086`–`NFR-090`, `NFR-096`). **Only `decodebot/recommender/` may import the ML libraries** (`scikit-learn`/`pandas`/`numpy`), lazily, per `FR-233`. Every milestone ends with a **mandatory stop for user approval**.
+>
+> **Non-negotiable gates for every Wave 3 milestone:** `tests/test_wave3_isolation.py` passes; `python main.py` (chatbot-only) starts in < 300ms; Week 1 and Week 2 Compliance Matrices still pass 100%.
+
+---
+
+### W3-M1 — Recommender Package & Dataset Foundation
+
+- **Scope:** Create the isolated `decodebot/recommender/` package skeleton, the built-in careers corpus, CSV corpus support, validation, and the `CareerProfile`/`SkillSet`/`RecommendationResult` data model. No ranking logic yet.
+- **Files to create/modify:** `decodebot/recommender/__init__.py`, `decodebot/recommender/corpus.py` (built-in corpus + CSV loading + validation + data model), `tests/test_wave3_isolation.py` (isolation gate — must stay green through every Wave 3 milestone), `tests/test_recommender_corpus.py`. No changes to existing engine code.
+- **Implements (Requirements satisfied):** `FR-233`, `FR-236`, `FR-237`, `FR-238`.
+- **Verifies (Tests required):** `TC-REC-001`, `TC-REC-002`, `TC-REC-003`.
+- **Manual verification:** `python main.py` launches normally; the built-in corpus loads via a small REPL check; a deliberately malformed CSV is rejected with a friendly error.
+- **Documentation updates:** none required this milestone (config keys land in W3-M4).
+- **Performance / isolation checks:** `tests/test_wave3_isolation.py` green (zero `decodebot.recommender` imports in `core/`/`rules/`/`gui/`, zero eager ML-library imports); chatbot-only startup < 300ms.
+- **Exit criteria:** all TC-REC-001–003 pass; corpus integrity verified (≥ 20 entries, ≥ 6 domains, no duplicate titles); malformed CSV → friendly error, never a crash.
+- **One scoped commit:** `feat: W3-M1 - recommender package & corpus foundation (FR-233, FR-236-FR-238)`
+- **Mandatory stop:** After exit criteria are met, **stop and await user approval** before starting W3-M2.
+
+---
+
+### W3-M2 — Input & Feature Extraction
+
+- **Scope:** Engine-level skill parsing/normalization and TF-IDF vectorization of corpus + query under a single fitted vocabulary. (CLI command registration completes in W3-M4.)
+- **Files to create/modify:** `decodebot/recommender/normalization.py`, `decodebot/recommender/features.py`, `tests/test_recommender_features.py`.
+- **Implements (Requirements satisfied):** `FR-239` (engine-level skill parsing; CLI registration completes in W3-M4), `FR-240`, `FR-241`.
+- **Verifies (Tests required):** `TC-REC-004`, `TC-REC-005`.
+- **Manual verification:** unit-level check that `"Python, SQL, machine learning"` and `"python,sql,machine learning"` tokenize identically; transformed query dimensionality equals the profile matrix dimensionality.
+- **Documentation updates:** none.
+- **Performance / isolation checks:** vectorization latency < 100ms on the built-in corpus (NFR-086 checkpoint); isolation gate still green.
+- **Exit criteria:** normalization equivalence and shared-vocabulary TF-IDF tests pass.
+- **One scoped commit:** `feat: W3-M2 - skill normalization & TF-IDF feature extraction (FR-239-FR-241)`
+- **Mandatory stop:** After exit criteria are met, **stop and await user approval** before starting W3-M3.
+
+---
+
+### W3-M3 — Ranking Engine & Fallbacks
+
+- **Scope:** Cosine-similarity ranking, deterministic tie-breaking, Top-N default 3 (validated 1–10, clamped to corpus size), and cold-start / zero-match / partial-match fallback handling.
+- **Files to create/modify:** `decodebot/recommender/ranker.py`, `decodebot/recommender/fallbacks.py`, finalize `decodebot/recommender/result.py`, `tests/test_recommender_ranker.py`.
+- **Implements (Requirements satisfied):** `FR-242`, `FR-243`, `FR-244`.
+- **Verifies (Tests required):** `TC-REC-006`, `TC-REC-007`, `TC-REC-008`, `TC-REC-009`.
+- **Manual verification:** canonical query `"Python, SQL, Machine Learning"` returns exactly 3 ranked results, highest-similarity first; a repeated run is identical; < 3 skills → guidance; out-of-vocabulary query → zero-match status.
+- **Documentation updates:** none.
+- **Performance / isolation checks:** NFR-086 latency checkpoint (< 100ms); NFR-087 determinism verified; isolation gate green.
+- **Exit criteria:** all ranker/fallback tests pass.
+- **One scoped commit:** `feat: W3-M3 - cosine ranking, Top-N & fallback handling (FR-242-FR-244)`
+- **Mandatory stop:** After exit criteria are met, **stop and await user approval** before starting W3-M4.
+
+---
+
+### W3-M4 — CLI Integration
+
+- **Scope:** Register `recommend` in the `COMMANDS` registry (`FR-058`), wire it into the dispatcher, add the `FR-235` config keys, add the `decodebot.recommender` logger tag, and render structured boxed CLI output honoring `--plain` (`FR-133`).
+- **Files to create/modify:** `decodebot/recommender/app_recommender.py` (thin bootstrap), modify `decodebot/rules/help_about_version.py` (COMMANDS entry), modify `decodebot/core/dispatcher.py` (route `recommend`), modify `decodebot/core/config.py` (`FR-235` keys), extend `docs/CONFIGURATION.md`, `tests/test_recommender_cli.py`.
+- **Implements (Requirements satisfied):** `FR-235`, `FR-239` (CLI registration), `FR-245`, `FR-247`.
+- **Verifies (Tests required):** `TC-REC-010`, `TC-REC-011`, `TC-REC-012`.
+- **Manual verification:** `python main.py recommend --skills "Python, SQL, Machine Learning"` prints a boxed top-3; `--plain` prints plain output; `help` lists `recommend`; missing `--skills` shows a friendly usage message.
+- **Documentation updates:** `docs/CONFIGURATION.md` extended with the five recommender keys and valid ranges.
+- **Performance / isolation checks:** lazy imports verified — chatbot-only startup < 300ms (NFR-090); `tests/test_wave3_isolation.py` and `tests/test_ml_isolation.py` both green; 1,000-iteration fuzz on malformed `recommend` invocations → zero unhandled exceptions (FR-247).
+- **Exit criteria:** TC-REC-010/011/012 pass; `recommend` appears in `help`; fuzz-green.
+- **One scoped commit:** `feat: W3-M4 - recommend CLI, config, logging & error handling (FR-235, FR-239, FR-245, FR-247)`
+- **Mandatory stop:** After exit criteria are met, **stop and await user approval** before starting W3-M5.
+
+---
+
+### W3-M5 — GUI Career Recommender Tab
+
+- **Scope:** Add the Tkinter "Career Recommender" tab calling the identical engine function as the CLI.
+- **Files to create/modify:** `decodebot/gui/recommender_panel.py`, modify `decodebot/gui/app_gui.py` (tab registration), `tests/test_gui_recommender.py` (headless-safe, mirroring `test_gui.py` patterns).
+- **Implements (Requirements satisfied):** `FR-246`.
+- **Verifies (Tests required):** `TC-REC-010` (GUI-parity half).
+- **Manual verification:** `python main.py --gui` → Career Recommender tab → enter `Python, SQL, Machine Learning` → click "Recommend" → same top-3 as the CLI; empty entry → inline validation, GUI stays responsive.
+- **Documentation updates:** `docs/GUI_GUIDE.md` extended with the new tab.
+- **Performance / isolation checks:** GUI module presence never affects default (non-`--gui`) CLI behavior; isolation gate green.
+- **Exit criteria:** GUI parity test passes; tab renders the same results as the CLI.
+- **One scoped commit:** `feat: W3-M5 - Career Recommender GUI tab (FR-246)`
+- **Mandatory stop:** After exit criteria are met, **stop and await user approval** before starting W3-M6.
+
+---
+
+### W3-M6 — Test Suite Completion
+
+- **Scope:** Close remaining TC-REC-* gaps; reach ≥ 90% line coverage on `decodebot/recommender/` (NFR-089); add any missing negative/edge/fuzz cases.
+- **Files to create/modify:** remaining `tests/test_recommender*.py` files.
+- **Implements (Requirements satisfied):** `FR-248`.
+- **Verifies (Tests required):** full `TC-REC-001`–`012` suite; `NFR-089` coverage target.
+- **Manual verification:** full test suite (Weeks 1 + 2 + Wave 3) runs green; coverage report confirms ≥ 90% on `decodebot/recommender/`.
+- **Documentation updates:** none.
+- **Performance / isolation checks:** full isolation + startup re-verification; Week 1 and Week 2 Compliance Matrices still pass 100%.
+- **Exit criteria:** all TC-REC-* pass; coverage ≥ 90%; zero regressions.
+- **One scoped commit:** `test: W3-M6 - complete recommender test suite (FR-248)`
+- **Mandatory stop:** After exit criteria are met, **stop and await user approval** before starting W3-M7.
+
+---
+
+### W3-M7 — Documentation & Final Wave 3 Sign-off
+
+- **Scope:** `docs/RECOMMENDER_GUIDE.md`, README section + badge, CHANGELOG v3.0.0 entry, and a full walk of the Part III Acceptance Criteria.
+- **Files to create/modify:** `docs/RECOMMENDER_GUIDE.md`, modify `README.md`, `CHANGELOG.md`.
+- **Implements (Requirements satisfied):** `NFR-096`; `FR-248` acceptance gate.
+- **Verifies (Tests required):** Part III Acceptance Criteria (all boxes).
+- **Manual verification:** a reviewer can run `recommend --skills "Python, SQL, Machine Learning"` from the README alone.
+- **Documentation updates:** `docs/RECOMMENDER_GUIDE.md`, README, CHANGELOG (`v3.0.0` entry).
+- **Performance / isolation checks:** final re-verification of isolation + startup + Weeks 1–2 compliance.
+- **Exit criteria:** Part III Acceptance Criteria checked; docs complete; **Wave 3 milestone reached (v3.0.0)**.
+- **One scoped commit:** `docs: W3-M7 - recommender guide, README, CHANGELOG (Wave 3 complete)`
+- **Mandatory stop:** After exit criteria are met, **stop and await user approval** — either to proceed to the optional Wave 4 or to tag the v3.0.0 release.
+
+---
+
+## Wave 4 (Week 4) — OCR Image/Text Recognition Engine (OPTIONAL EXTENSION, PLANNED)
+
+> **Status: PLANNED and OPTIONAL-EXTENSION.** This Wave is **optional** and must NOT be started until (a) Wave 3 is complete and approved, and (b) the user explicitly approves starting Wave 4. It implements `SPEC.md → Part IV` (`FR-249`–`FR-262`, `NFR-091`–`NFR-095`, `NFR-097`). **`opencv-python-headless` and `pytesseract` are optional dependencies** permitted **only** inside `decodebot/recognition/` (`FR-249`, `FR-250`); Tesseract is an external binary invoked via `pytesseract`. Every milestone ends with a **mandatory stop for user approval**.
+>
+> **Non-negotiable gates for every Wave 4 milestone:** `tests/test_wave4_isolation.py` passes; `python main.py` (chatbot-only) starts in < 300ms with OCR deps installed-but-unused; Weeks 1–3 Compliance Matrices still pass 100%. CI must never require OpenCV or Tesseract installed (all such paths tested via mocks).
+
+---
+
+### W4-M1 — Recognition Package & Image Ingestion
+
+- **Scope:** Create the isolated `decodebot/recognition/` package skeleton, the ingestion module (formats, existence, file-size and dimension bounds), the `RecognitionResult` scaffold, the `samples/` fixture image, and the optional-dependency manifest.
+- **Files to create/modify:** `decodebot/recognition/__init__.py`, `decodebot/recognition/ingestor.py`, `decodebot/recognition/result.py` (scaffold), `tests/test_wave4_isolation.py` (isolation gate — must stay green through every Wave 4 milestone), `tests/test_recognition_ingestion.py`, `samples/README.md`, `samples/sample_text.png` (fixture), `requirements-ocr.txt` (documented; **not** installed in the base venv).
+- **Implements (Requirements satisfied):** `FR-249`, `FR-252` (config keys `FR-251` wire in W4-M5).
+- **Verifies (Tests required):** `TC-OCR-001`, `TC-OCR-002`.
+- **Manual verification:** chatbot runs with neither OpenCV nor pytesseract installed; missing file, > 10MB file, and over-dimension image each produce a friendly error.
+- **Documentation updates:** `requirements-ocr.txt` + README optional-dependency note.
+- **Performance / isolation checks:** `tests/test_wave4_isolation.py` green (zero `cv2`/`pytesseract`/`decodebot.recognition` imports outside the allowed scope); chatbot-only startup < 300ms with OCR deps absent.
+- **Exit criteria:** TC-OCR-001/002 pass; ingestion bounds verified.
+- **One scoped commit:** `feat: W4-M1 - recognition package & image ingestion (FR-249, FR-252)`
+- **Mandatory stop:** After exit criteria are met, **stop and await user approval** before starting W4-M2.
+
+---
+
+### W4-M2 — Preprocessing Pipeline
+
+- **Scope:** Grayscale → Gaussian blur → deskew → adaptive thresholding, each stage a separate, headless-safe, testable function.
+- **Files to create/modify:** `decodebot/recognition/preprocess.py`, `tests/test_recognition_preprocess.py`.
+- **Implements (Requirements satisfied):** `FR-253`.
+- **Verifies (Tests required):** `TC-OCR-003`, `TC-OCR-004`.
+- **Manual verification:** run the pipeline on the fixture image; deskew corrects a synthetic 3°-skewed image to within ~0.5°; blank image yields `no_text` without crashing.
+- **Documentation updates:** none.
+- **Performance / isolation checks:** pipeline completes < 1s on the fixture (NFR-093 checkpoint); isolation gate green.
+- **Exit criteria:** TC-OCR-003/004 pass.
+- **One scoped commit:** `feat: W4-M2 - OCR preprocessing pipeline (FR-253)`
+- **Mandatory stop:** After exit criteria are met, **stop and await user approval** before starting W4-M3.
+
+---
+
+### W4-M3 — Tesseract OCR Engine
+
+- **Scope:** `pytesseract.image_to_data` wrapper supporting PSM modes 3/6/7/11 (default 6), per-word data collection, and friendly missing-dependency/binary handling.
+- **Files to create/modify:** `decodebot/recognition/ocr_engine.py`, finalize `requirements-ocr.txt`, `tests/test_recognition_ocr.py` (mocked tesseract; real fixture used when Tesseract is available).
+- **Implements (Requirements satisfied):** `FR-254`, `FR-255`.
+- **Verifies (Tests required):** `TC-OCR-005`, `TC-OCR-010`.
+- **Manual verification:** fixture image yields expected words with per-word confidence; simulated missing dependency/binary → friendly message, no crash.
+- **Documentation updates:** README / `requirements-ocr.txt` install instructions.
+- **Performance / isolation checks:** OCR latency checkpoint; isolation gate green.
+- **Exit criteria:** TC-OCR-005/010 pass.
+- **One scoped commit:** `feat: W4-M3 - Tesseract OCR engine, PSM modes, graceful degradation (FR-254-FR-255)`
+- **Mandatory stop:** After exit criteria are met, **stop and await user approval** before starting W4-M4.
+
+---
+
+### W4-M4 — Confidence Filtering & Output
+
+- **Scope:** Default 80% confidence threshold filtering, low-confidence routing, the four recognition statuses, the finalized structured `RecognitionResult`, and `--save` output with no-overwrite protection.
+- **Files to create/modify:** `decodebot/recognition/filter.py`, finalize `decodebot/recognition/result.py`, `tests/test_recognition_filter.py`, `tests/test_recognition_output.py`.
+- **Implements (Requirements satisfied):** `FR-256`, `FR-257`, `FR-258` (engine-level; CLI `--save` wiring completes in W4-M5).
+- **Verifies (Tests required):** `TC-OCR-006`, `TC-OCR-007`, `TC-OCR-008`.
+- **Manual verification:** a fixture with a low-confidence word routes that word to `low_confidence_words`; each status demonstrated; `--save` refuses to overwrite an existing file.
+- **Documentation updates:** none.
+- **Performance / isolation checks:** no-overwrite behavior verified; isolation gate green.
+- **Exit criteria:** TC-OCR-006/007/008 pass.
+- **One scoped commit:** `feat: W4-M4 - confidence filtering & recognition output (FR-256-FR-258)`
+- **Mandatory stop:** After exit criteria are met, **stop and await user approval** before starting W4-M5.
+
+---
+
+### W4-M5 — CLI & GUI Integration
+
+- **Scope:** Register `recognize` in `COMMANDS`, wire the dispatcher, add the `FR-251` config keys, add the `decodebot.recognition` logger tag, render boxed CLI output honoring `--plain`, and add the GUI "Recognition" tab.
+- **Files to create/modify:** `decodebot/recognition/app_recognition.py`, modify `decodebot/rules/help_about_version.py`, `decodebot/core/dispatcher.py`, `decodebot/core/config.py`, `decodebot/gui/recognition_panel.py`, `decodebot/gui/app_gui.py`, extend `docs/CONFIGURATION.md`, `tests/test_recognition_cli.py`, `tests/test_gui_recognition.py`.
+- **Implements (Requirements satisfied):** `FR-251`, `FR-259`, `FR-260`.
+- **Verifies (Tests required):** `TC-OCR-009`, `TC-OCR-012`.
+- **Manual verification:** `python main.py recognize --image "samples/sample_text.png" --psm 6` → `accepted` status + text; GUI tab matches; missing `--image` → friendly usage message.
+- **Documentation updates:** `docs/CONFIGURATION.md` extended with the seven recognition keys and valid ranges.
+- **Performance / isolation checks:** lazy imports verified — chatbot-only startup < 300ms with OCR deps installed but unused (`FR-250`); `tests/test_wave4_isolation.py` green; Weeks 1–3 matrices unaffected.
+- **Exit criteria:** TC-OCR-009/012 pass; `recognize` appears in `help`.
+- **One scoped commit:** `feat: W4-M5 - recognize CLI & GUI, config, logging (FR-251, FR-259-FR-260)`
+- **Mandatory stop:** After exit criteria are met, **stop and await user approval** before starting W4-M6.
+
+---
+
+### W4-M6 — Testing, Documentation & Final Wave 4 Sign-off
+
+- **Scope:** Complete the TC-OCR-* suite, reach ≥ 90% coverage on `decodebot/recognition/` (NFR-094), run the privacy static scan, write `docs/OCR_GUIDE.md`, update README/CHANGELOG, and walk the Part IV Acceptance Criteria.
+- **Files to create/modify:** remaining `tests/test_recognition*.py`, `docs/OCR_GUIDE.md`, modify `README.md`, `CHANGELOG.md`.
+- **Implements (Requirements satisfied):** `FR-261`, `FR-262`; `NFR-091`–`NFR-095`, `NFR-097`.
+- **Verifies (Tests required):** full `TC-OCR-001`–`012` suite; Part IV Acceptance Criteria (all boxes).
+- **Manual verification:** full suite (Weeks 1–4) runs green; privacy scan clean; a reviewer can run the `recognize` demo from the README alone.
+- **Documentation updates:** `docs/OCR_GUIDE.md`, README, CHANGELOG (`v3.1.0` entry).
+- **Performance / isolation checks:** final isolation + startup re-verification; all compliance matrices (Weeks 1–3) still pass.
+- **Exit criteria:** all TC-OCR-* pass; coverage ≥ 90%; privacy gate green; Part IV Acceptance Criteria checked; **Wave 4 milestone reached (v3.1.0, optional)**.
+- **One scoped commit:** `docs: W4-M6 - OCR guide, README, CHANGELOG (Wave 4 complete)`
+- **Mandatory stop:** After exit criteria are met, **stop and await user approval** — either to tag the v3.1.0 release or to conclude.
+
+---
 
 ## Master File Creation Sequence (Flat, Dependency-Ordered)
 
@@ -737,6 +964,24 @@ decodebot-ai/
 61. `docs/ML_GUIDE.md`, README/CHANGELOG updates (P23)
 62. Final full-suite run (Week 1 + Week 2) + both Acceptance Criteria checklists + all NFR benchmarks (P24)
 63. Tag `v2.0.0` release.
+64. `decodebot/recommender/__init__.py`, `corpus.py`, `tests/test_wave3_isolation.py`, `test_recommender_corpus.py` (W3-M1)
+65. `decodebot/recommender/normalization.py`, `features.py`, `tests/test_recommender_features.py` (W3-M2)
+66. `decodebot/recommender/ranker.py`, `fallbacks.py`, `result.py`, `tests/test_recommender_ranker.py` (W3-M3)
+67. `decodebot/recommender/app_recommender.py`, COMMANDS/dispatcher/config wiring, `docs/CONFIGURATION.md` update, `tests/test_recommender_cli.py` (W3-M4)
+68. **⛔ GATE: `tests/test_wave3_isolation.py` + `tests/test_ml_isolation.py` + startup check; re-run Week 1 & Week 2 Compliance Matrices — all must still pass.**
+69. `decodebot/gui/recommender_panel.py`, `gui/app_gui.py` update, `tests/test_gui_recommender.py` (W3-M5)
+70. Remaining `tests/test_recommender*.py` → full TC-REC suite, ≥90% coverage on `decodebot/recommender/` (W3-M6)
+71. `docs/RECOMMENDER_GUIDE.md`, README/CHANGELOG updates, Part III Acceptance Criteria walk (W3-M7)
+72. **⛔ MILESTONE: Wave 3 complete. Tag `v3.0.0` release (await approval). Wave 4 is OPTIONAL.**
+73. `decodebot/recognition/__init__.py`, `ingestor.py`, `result.py`, `tests/test_wave4_isolation.py`, `test_recognition_ingestion.py`, `samples/`, `requirements-ocr.txt` (W4-M1)
+74. `decodebot/recognition/preprocess.py`, `tests/test_recognition_preprocess.py` (W4-M2)
+75. `decodebot/recognition/ocr_engine.py`, `tests/test_recognition_ocr.py` (W4-M3)
+76. `decodebot/recognition/filter.py`, `tests/test_recognition_filter.py`, `test_recognition_output.py` (W4-M4)
+77. `decodebot/recognition/app_recognition.py`, COMMANDS/dispatcher/config wiring, `gui/recognition_panel.py`, `gui/app_gui.py` update, `docs/CONFIGURATION.md` update, `tests/test_recognition_cli.py`, `test_gui_recognition.py` (W4-M5)
+78. **⛔ GATE: `tests/test_wave4_isolation.py` + privacy static scan + startup check; re-run Weeks 1–3 Compliance Matrices — all must still pass.**
+79. Remaining `tests/test_recognition*.py` → full TC-OCR suite, ≥90% coverage on `decodebot/recognition/` (W4-M6)
+80. `docs/OCR_GUIDE.md`, README/CHANGELOG updates, Part IV Acceptance Criteria walk (W4-M6)
+81. **⛔ MILESTONE: Wave 4 complete (optional). Tag `v3.1.0` release (await approval).**
 
 ---
 
@@ -760,6 +1005,19 @@ decodebot-ai/
 - [ ] All 8 Week 2 Compliance Matrix rows still pass (once Phase 21 is reached and onward).
 - [ ] Chatbot-only startup time (`python main.py`, no ML command invoked) remains under 300ms even with ML dependencies installed.
 - [ ] No chat-text input is ever passed into a `scikit-learn` model's `predict()` method (`FR-223`).
+
+### Additional checks starting Wave 3 (Recommender Engine)
+- [ ] `tests/test_wave3_isolation.py` still passes — zero `decodebot.recommender` imports in `decodebot/core/`, `decodebot/rules/`, `decodebot/gui/`, and no eager ML-library import at chatbot startup.
+- [ ] `recommend` produces identical ranked output across repeated runs (`NFR-087`).
+- [ ] Chatbot-only startup time remains < 300ms with recommender dependencies installed but unused (`NFR-090`).
+- [ ] No new recommender file exceeds ~400 lines (`NFR-012`); no function exceeds cyclomatic complexity 10 (`NFR-014`).
+
+### Additional checks starting Wave 4 (Recognition Engine)
+- [ ] `tests/test_wave4_isolation.py` still passes — zero `cv2`/`pytesseract`/`decodebot.recognition` imports outside the allowed scope.
+- [ ] OCR runs entirely locally — zero network sockets opened (`NFR-092`).
+- [ ] Chatbot-only startup time remains < 300ms with OCR dependencies installed but unused (`FR-250`).
+- [ ] Saved recognition output never overwrites an existing file unless `rec_overwrite=true`.
+- [ ] No new recognition file exceeds ~400 lines (`NFR-012`); no function exceeds cyclomatic complexity 10 (`NFR-014`).
 
 ---
 
@@ -792,6 +1050,19 @@ decodebot-ai/
 | 22 | — (all Part II) | NFR-076–077 | 80+ ML test suite |
 | 23 | — | NFR-079 | Week 2 GitHub Standards checklist |
 | 24 | — (all Part II) | All Part II NFRs | Week 2 Acceptance Criteria (all boxes) |
+| W3-M1 | FR-233, FR-236–238 | NFR-088 | TC-REC-001–003 |
+| W3-M2 | FR-239–241 | NFR-086 | TC-REC-004–005 |
+| W3-M3 | FR-242–244 | NFR-086, NFR-087 | TC-REC-006–009 |
+| W3-M4 | FR-235, FR-239, FR-245, FR-247 | NFR-090 | TC-REC-010–012 |
+| W3-M5 | FR-246 | NFR-088 | TC-REC-010 (GUI parity) |
+| W3-M6 | FR-248 | NFR-089 | Full TC-REC suite |
+| W3-M7 | All Wave 3 | NFR-096 | Part III Acceptance Criteria (all boxes) |
+| W4-M1 | FR-249, FR-252 | NFR-091, NFR-093 | TC-OCR-001–002 |
+| W4-M2 | FR-253 | NFR-093 | TC-OCR-003–004 |
+| W4-M3 | FR-254–255 | NFR-095 | TC-OCR-005, TC-OCR-010 |
+| W4-M4 | FR-256–258 | — | TC-OCR-006–008 |
+| W4-M5 | FR-251, FR-259–260 | NFR-092, NFR-097 | TC-OCR-009, TC-OCR-012 |
+| W4-M6 | FR-261–262 | NFR-091–095, NFR-097 | Full TC-OCR suite; Part IV Acceptance Criteria (all boxes) |
 
 ---
 
@@ -801,8 +1072,9 @@ decodebot-ai/
 |---|---|---|
 | v1.0.0 | 0–13 | Initial Week 1 rule-based Chatbot Engine implementation plan |
 | v1.1.0 | 14–15 | Added Terminal Animation Layer and Optional Tkinter GUI Layer |
-| **v2.0.0** | **16–24** | **Added Machine Learning Data Classification Engine (Week 2), fully isolated in `decodebot/ml/`. Phases 0–15 unchanged and fully preserved.** |
+| v2.0.0 | 16–24 | Added Machine Learning Data Classification Engine (Week 2), fully isolated in `decodebot/ml/`. Phases 0–15 unchanged and fully preserved. |
+| **v3.0.0** | **W3-M1–W3-M7 (+ Phases 0–24 preserved)** | **Added Content-Based Tech Stack Recommendation Engine (Week 3, PLANNED) in isolated `decodebot/recommender/`, plus the optional OCR Image/Text Recognition Engine (Week 4, PLANNED and OPTIONAL-EXTENSION) in isolated `decodebot/recognition/`. Phases 0–24 unchanged and fully preserved.** |
 
 ---
 
-*End of PLAN.md. This document must be re-validated against `SPEC.md` after any future specification change — if `SPEC.md` is revised, re-derive the affected phase(s) of this plan before resuming implementation. Phases 0–15 represent completed, preserved work; Phases 16–24 represent the new Week 2 Machine Learning Engine build sequence.*
+*End of PLAN.md. This document must be re-validated against `SPEC.md` after any future specification change — if `SPEC.md` is revised, re-derive the affected phase(s) of this plan before resuming implementation. Phases 0–15 represent completed, preserved work; Phases 16–24 represent the Week 2 Machine Learning Engine build sequence; Wave 3 (W3-M1–W3-M7) and Wave 4 (W4-M1–W4-M6, optional) represent the planned Week 3 and Week 4 build sequences.*

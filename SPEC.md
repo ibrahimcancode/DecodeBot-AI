@@ -10,22 +10,24 @@
 |---|---|
 | **Project Name** | DecodeBot AI |
 | **Document Type** | Software Requirements & Architecture Specification (SPEC.md) |
-| **Version** | 2.0.0 |
+| **Version** | 3.0.0 |
 | **Author** | `<AUTHOR NAME PLACEHOLDER>` |
-| **Organization** | DecodeLabs Artificial Intelligence Internship — Week 1 (Project 1) + Week 2 (Project 2) |
+| **Organization** | DecodeLabs Artificial Intelligence Internship — Week 1 (Project 1) + Week 2 (Project 2) + Week 3 (Project 3, PLANNED) + Week 4 (Project 4, PLANNED & OPTIONAL) |
 | **License** | MIT License |
-| **Status** | ✅ Approved for Implementation |
+| **Status** | ✅ Approved for Implementation (Parts I–II COMPLETE; Parts III–IV PLANNED) |
 | **Document Classification** | Public / Portfolio / Open Source |
 | **Target Implementer** | OpenCode (AI Coding Agent) |
-| **Date** | 2026-08-01 |
-| **Revision History** | v1.0.0 — Initial Week 1 rule-based chatbot specification. <br> v1.1.0 — Added Terminal Animation Layer (Category P) and Optional Tkinter GUI Layer (Category Q). <br> **v2.0.0 — Added Week 2 Machine Learning Data Classification Engine (Part II, Category R). Week 1 chatbot, GUI, and animation layers are fully preserved, unmodified, and remain 100% rule-based; nothing was removed or downgraded.** |
+| **Date** | 2026-08-13 |
+| **Revision History** | v1.0.0 — Initial Week 1 rule-based chatbot specification. <br> v1.1.0 — Added Terminal Animation Layer (Category P) and Optional Tkinter GUI Layer (Category Q). <br> v2.0.0 — Added Week 2 Machine Learning Data Classification Engine (Part II, Category R). Week 1 chatbot, GUI, and animation layers are fully preserved, unmodified, and remain 100% rule-based; nothing was removed or downgraded. <br> **v3.0.0 — Added Week 3 Content-Based Tech Stack Recommendation Engine (Part III, Category S, PLANNED) and Week 4 OCR Image/Text Recognition Engine (Part IV, Category T, PLANNED and OPTIONAL-EXTENSION). Parts I and II remain COMPLETE, fully preserved, unmodified, and in force; nothing was removed or downgraded.** |
 
 > **📌 How This Document Is Organized (Read This First)**
-> This SPEC.md now covers **two integrated but independently-scoped modules** inside the single DecodeBot AI project:
+> This SPEC.md now covers **four integrated but independently-scoped modules** inside the single DecodeBot AI project:
 > - **Part I — Chatbot Engine (Week 1, unchanged):** Sections "Executive Summary" through "References" as originally written, covering the 100% rule-based conversational agent, its optional Tkinter GUI, and terminal animations. **Nothing in Part I has been altered, weakened, or removed.** The "no ML/NLP/LLM" constraint (`CON-01`, `FR-009`) still applies strictly to this module and to this module only.
 > - **Part II — Machine Learning Engine (Week 2, new):** A new, clearly separated section near the end of this document, titled **"PART II — WEEK 2: MACHINE LEARNING DATA CLASSIFICATION ENGINE."** This part introduces `scikit-learn`-based supervised learning as an explicitly scoped, separate module — required and mandated by the official DecodeLabs Week 2 brief — and does **not** relax any Part I constraint. The chatbot's conversational logic remains 100% rule-based; only the new, separate ML Engine uses machine learning, exactly as instructed by DecodeLabs.
+> - **Part III — Content-Based Tech Stack Recommendation Engine (Week 3, PLANNED):** A new, clearly separated section titled **"PART III — WEEK 3: CONTENT-BASED TECH STACK RECOMMENDATION ENGINE."** This part is **PLANNED (not yet implemented)** and strictly additive. It reuses the Week 2 ML dependency scope (`FR-229`) inside a new isolated `decodebot/recommender/` package only — never inside the Chatbot Engine.
+> - **Part IV — OCR Image/Text Recognition Engine (Week 4, PLANNED and OPTIONAL-EXTENSION):** A new, clearly separated section titled **"PART IV — WEEK 4: OCR IMAGE/TEXT RECOGNITION ENGINE (OPTIONAL EXTENSION)."** This part is **PLANNED** and **optional** — the project remains complete and gradeable without it. OpenCV (`opencv-python-headless`) and `pytesseract` are optional dependencies scoped to the isolated `decodebot/recognition/` package only, and the OCR path was selected over the object-detection path for Week 4.
 >
-> Any implementer (OpenCode) must treat Part I as immutable ground truth for chatbot behavior and Part II as strictly additive.
+> Any implementer (OpenCode) must treat Part I as immutable ground truth for chatbot behavior, Part II as strictly additive and COMPLETE, and Parts III–IV as strictly additive and **PLANNED** (no code, tests, or dependencies are to be changed for them until the plan — `PLAN.md`, Waves 3 and 4 — is approved and executed milestone by milestone).
 
 > **Implementation Directive:** This document is the **single source of truth** for the DecodeBot AI project. Any ambiguity encountered by an implementing agent must be resolved by re-reading this document in full before making an assumption. No functional behavior should be invented that is not derivable from this specification.
 
@@ -4224,6 +4226,837 @@ Minimum viable dataset size (exactly enough samples for a valid stratified split
 ---
 ---
 
+# PART III — WEEK 3: CONTENT-BASED TECH STACK RECOMMENDATION ENGINE
+
+> **Status: PLANNED (not yet implemented).**
+>
+> **Scope of Part III:** This part documents the **Content-Based Tech Stack Recommendation Engine** proposed for DecodeLabs AI Internship Week 3. It is **additive only**. Every requirement in Part I (Week 1) and Part II (Week 2) remains unchanged, unweakened, and fully in force. The new engine lives in an isolated `decodebot/recommender/` package that reuses the ML libraries already scoped to the ML Engine (`FR-229`) without ever importing them — or being imported — by the Chatbot Engine (`decodebot/core/`, `decodebot/rules/`, `decodebot/gui/`). This part is documented as **PLANNED**: no production code, tests, or dependencies are to be changed for it until the corresponding plan (`PLAN.md`, Wave 3, milestones W3-M1–W3-M7) is approved and implemented milestone by milestone, with a mandatory stop for user approval after each milestone.
+
+## Week 3 Executive Summary
+
+Week 3 evolves **DecodeBot AI** from a two-engine application (rule-based Chatbot + supervised-classification ML Engine) into a three-engine application with the addition of a **Content-Based Tech Stack Recommendation Engine**. Given a short list of skills, the recommender ranks the built-in career/tech-stack corpus (approximately 24 curated profiles spanning backend, frontend, data/ML, mobile, DevOps/cloud, and cybersecurity) by cosine similarity between the TF-IDF vector of the user's skill query and the TF-IDF vectors of each profile's skills + description. The query and the corpus are vectorized under **one fitted vocabulary** (`FR-241`), results are deterministic and tie-broken (`FR-243`), Top-N defaults to 3 (`FR-242`), and cold-start / zero-match / partial-match fallbacks guarantee a friendly result for any input (`FR-244`). A new `recommend` CLI command and a Tkinter "Career Recommender" tab expose the identical underlying engine, mirroring the CLI/GUI parity principle established in Part I (`FR-145`) and Part II (`FR-224`).
+
+The recommender is fully isolated, lazy-loaded, and configurable — it adds no dependency to the Chatbot Engine, never slows chatbot startup (`FR-234`), and ships with the same test rigor, documentation, and acceptance gates as the ML Engine.
+
+## Objectives — Week 3 Additions
+
+### Internship Objectives (Week 3)
+- OBJ-INT-09: Recommend a career/tech-stack profile from a natural-language list of skills, demonstrating applied information-retrieval skill.
+- OBJ-INT-10: Deliver the recommender as a self-contained, isolated module with CLI and GUI surfaces, without disturbing the Week 1 and Week 2 deliverables.
+
+### Technical Objectives (Week 3)
+- OBJ-TECH-10: Implement the recommender as a fully isolated package (`decodebot/recommender/`) with zero coupling to the Chatbot Engine's rule logic and zero eager imports of ML libraries at startup.
+- OBJ-TECH-11: Build a deterministic content-based pipeline: normalize → vectorize (single fitted TF-IDF vocabulary) → cosine rank → fallback-handled Top-N output.
+- OBJ-TECH-12: Support a built-in corpus plus user-supplied CSV corpora behind one consistent interface.
+
+### Portfolio Objectives (Week 3)
+- OBJ-PORT-06: Demonstrate a second applied-AI competency (content-based recommendation / information retrieval) alongside the Week 1 rule-based and Week 2 classification work.
+- OBJ-PORT-07: Produce a demoable, screen-share-friendly "type your skills, get a career match" feature in both CLI and GUI.
+
+### Learning Objectives (Week 3)
+- OBJ-LEARN-08: Build practical experience with TF-IDF vectorization, cosine similarity, and deterministic ranking.
+- OBJ-LEARN-09: Understand content-based vs. collaborative filtering trade-offs and why content-based is the right choice for a privacy-preserving, offline, cold-start-safe portfolio project.
+
+### Stretch Goals (Week 3)
+- Optionally surface the matched top skill per result, highlight exactly which of the user's skills matched each profile, and support a `--top-n` CLI override (validated 1–10).
+
+## Functional Requirements — Content-Based Tech Stack Recommendation Engine (FR-233 – FR-248)
+
+> New Functional Requirements for Week 3. Upon Wave 3 implementation the combined project total becomes **248 Functional Requirements (FR-001 – FR-248)**.
+
+### Category S1 — Package & Architecture (FR-233 – FR-235)
+
+**FR-233 — Recommender Package Isolation**
+- **Priority:** P0
+- **Description:** A new `decodebot/recommender/` package shall implement the Content-Based Tech Stack Recommendation Engine. No file under `decodebot/core/`, `decodebot/rules/`, or `decodebot/gui/` may import from `decodebot.recommender`. Within `decodebot/recommender/`, ML libraries (`scikit-learn`, `pandas`, `numpy`) are permitted but must be imported lazily (never at `decodebot.recommender` import time). The Chatbot Engine (Part I) and ML classification Engine (Part II) must behave identically before and after this package exists.
+- **Rationale:** Preserves the architectural boundary discipline established in `FR-229` — a new engine is another isolated module, never blended into the rule-based core.
+- **Dependencies:** FR-229
+- **Acceptance Criteria:** `tests/test_wave3_isolation.py` passes, confirming (a) zero `decodebot.recommender` imports inside `decodebot/core/`, `decodebot/rules/`, and `decodebot/gui/`, and (b) zero eager ML-library imports at chatbot startup.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-234 — Recommender Lazy Imports & Startup Preservation**
+- **Priority:** P1
+- **Description:** The `scikit-learn`/`pandas`/`numpy` imports required by the recommender shall occur only when a `recommend` command is first invoked (mirroring `FR-232`). `python main.py` (chatbot-only session) must still start in under 300ms with all recommender dependencies installed.
+- **Rationale:** Extends `NFR-003`/`NFR-075` startup guarantees to the new engine.
+- **Dependencies:** FR-232, NFR-075
+- **Acceptance Criteria:** `python main.py` starts in under 300ms with recommender dependencies installed but unused.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-235 — Recommender Configuration Keys**
+- **Priority:** P1
+- **Description:** The existing configuration system (`FR-088`) shall be extended with recommender keys: `recommender_corpus` (default `"builtin"`, or a CSV file path), `recommender_top_n` (default `3`, valid `1–10`), `recommender_min_skills` (default `3`), `recommender_threshold` (default `0.0`, valid `0–1`), `recommender_random_state` (default `42`). Per-key validation and fallback-to-default behavior (`FR-094`) applies identically to these new keys.
+- **Rationale:** Consistency with the Chatbot Engine's and ML Engine's (`FR-226`) configuration philosophy.
+- **Dependencies:** FR-088, FR-094
+- **Acceptance Criteria:** All keys are documented in `docs/CONFIGURATION.md` (extended) with defaults and valid ranges.
+- **Edge Cases:** An invalid value (e.g., `recommender_top_n = 0`) falls back to the default with a logged warning; it never prevents startup.
+- **Example:** N/A.
+
+### Category S2 — Dataset & Data Model (FR-236 – FR-238)
+
+**FR-236 — Built-in Careers Corpus**
+- **Priority:** P0
+- **Description:** The recommender shall ship a built-in corpus of approximately 24 career/tech-stack profiles, each containing a title, a comma-separated skills list, and a short human-readable description. The corpus must cover at least 6 broad domains: backend, frontend, data/ML, mobile, DevOps/cloud, and cybersecurity.
+- **Rationale:** Provides a demoable, offline, deterministic baseline without requiring user data.
+- **Dependencies:** FR-233
+- **Acceptance Criteria:** The built-in corpus loads successfully, contains ≥ 20 entries with non-empty skills lists, spans ≥ 6 domains, and has no duplicate titles (case-insensitive).
+- **Edge Cases:** N/A.
+- **Example:** A profile such as `("Data Scientist", "Python, SQL, Machine Learning, Pandas, Scikit-learn", "Analyzes data to drive business decisions.")`.
+
+**FR-237 — Custom Corpus via CSV**
+- **Priority:** P2
+- **Description:** Setting `recommender_corpus` to a CSV file path shall load that file as the active corpus. Required columns: `title`, `skills`, `description`. The same validation rules as the built-in corpus apply.
+- **Rationale:** Extensibility — users can recommend against their own catalog without code changes.
+- **Dependencies:** FR-236, FR-235
+- **Acceptance Criteria:** A sample CSV with ≥ 2 valid rows loads and recommends correctly; a malformed CSV (missing columns, empty skills) produces a friendly error, never a crash.
+- **Edge Cases:** CSV missing a required column → friendly error naming the offending column(s).
+- **Example:** N/A.
+
+**FR-238 — Corpus Validation & Structured Data Model**
+- **Priority:** P0
+- **Description:** All corpora shall pass validation before use: ≥ 2 entries, every entry has a non-empty title and non-empty skills list, and no duplicate titles (case-insensitive). The engine shall expose structured result objects — `CareerProfile`, `SkillSet`, and `RecommendationResult` — so callers (CLI, GUI, tests) never manipulate raw arrays.
+- **Rationale:** Structured data model consistent with the ML Engine's `Dataset` (`FR-164`) and the project's dataclass conventions.
+- **Dependencies:** FR-236
+- **Acceptance Criteria:** A unit test verifies validation rejects an empty-skills entry and a duplicate title; result objects expose typed fields (title, skills, description, similarity, matched skills).
+- **Edge Cases:** A corpus with exactly 2 entries still works — Top-N is clamped to 2.
+- **Example:** N/A.
+
+### Category S3 — User Input & Normalization (FR-239 – FR-240)
+
+**FR-239 — `recommend` Command & Skill Input**
+- **Priority:** P0
+- **Description:** A new `recommend` command shall be registered in the same `COMMANDS` registry used by the Chatbot Engine and ML Engine (`FR-058`, `FR-222`), accepting a `--skills` argument containing one or more comma-separated skills. Invocation: `python main.py recommend --skills "Python, SQL, Machine Learning"`.
+- **Rationale:** Consistency and discoverability — one unified command surface for the whole application.
+- **Dependencies:** FR-058, FR-222
+- **Acceptance Criteria:** `help` output lists `recommend` under a distinct "Recommendations" section; the documented invocation returns ranked results.
+- **Edge Cases:** Missing `--skills` → friendly usage message; the session continues.
+- **Example:** N/A.
+
+**FR-240 — Skill Input Normalization**
+- **Priority:** P1
+- **Description:** Skill tokens from the user query and from the corpus shall be normalized consistently before matching: trim whitespace, lowercase, strip trailing punctuation, and map common abbreviations to canonical forms (e.g., `"ml"` → `"machine learning"`). Comma-separated and space-separated skill lists shall tokenize equivalently.
+- **Rationale:** Ensures `"Python,"` and `"python"` match; consistent with the input-normalization discipline of `FR-013`–`FR-024`.
+- **Dependencies:** FR-239
+- **Acceptance Criteria:** Unit tests verify that `"Python, SQL, machine learning"` and `"python,sql,machine learning"` produce identical token sets.
+- **Edge Cases:** Empty or symbol-only skill tokens are dropped, never crash.
+- **Example:** N/A.
+
+### Category S4 — Profile & Feature Extraction (FR-241)
+
+**FR-241 — TF-IDF Feature Extraction Over a Single Fitted Vocabulary**
+- **Priority:** P0
+- **Description:** The engine shall vectorize each career profile's combined skills + description text using `TfidfVectorizer` (lowercase analyzer, configurable max-feature bound), producing a document-term matrix. The user query (normalized skills) shall be transformed with the **same** fitted vectorizer, so profiles and query share one vocabulary. No corpus text may leak into the query representation beyond the shared vocabulary.
+- **Rationale:** Content-based matching requires profiles and query to live in one common feature space.
+- **Dependencies:** FR-236, FR-240
+- **Acceptance Criteria:** A regression test confirms the profile matrix and the transformed query have identical feature dimensionality (the fitted vocabulary).
+- **Edge Cases:** A query whose tokens all fall outside the vocabulary yields an all-zero vector — handled by the zero-match fallback (`FR-244`).
+- **Example:** N/A.
+
+### Category S5 — Similarity & Ranking (FR-242 – FR-243)
+
+**FR-242 — Cosine Similarity & Top-N Ranking**
+- **Priority:** P0
+- **Description:** The engine shall rank profiles by cosine similarity between the query vector and each profile vector (via `sklearn.metrics.pairwise.cosine_similarity`), returning the top N profiles. `recommender_top_n` (default `3`, validated to `1–10`) controls N; N is clamped to the corpus size.
+- **Rationale:** Cosine similarity is the canonical content-based ranking metric; Top-N gives a compact, useful answer.
+- **Dependencies:** FR-241, FR-235
+- **Acceptance Criteria:** For the canonical query `"Python, SQL, Machine Learning"`, the built-in corpus returns exactly 3 ranked results with the highest-similarity profile first.
+- **Edge Cases:** Top-N larger than the corpus size returns all profiles; Top-N = 1 returns a single result.
+- **Example:** N/A.
+
+**FR-243 — Deterministic Output & Tie-Breaking**
+- **Priority:** P0
+- **Description:** Ranking shall be deterministic: identical input, corpus, and configuration must always yield identical ranked lists. Equal-similarity ties shall be broken by stable secondary keys — corpus order, then title alphabetically — never by hash or random order.
+- **Rationale:** Matches the determinism discipline of `NFR-022` and `NFR-069`.
+- **Dependencies:** FR-242
+- **Acceptance Criteria:** Two consecutive `recommend` invocations with identical input produce byte-identical output.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+### Category S6 — Cold Start, Zero-Match & Fallback (FR-244)
+
+**FR-244 — Cold Start, Zero-Match & Fallback Handling**
+- **Priority:** P0
+- **Description:** (1) **Cold start:** invoking `recommend` with no `--skills`, or fewer than `recommender_min_skills` (default `3`), shall return a friendly guidance message listing example skills — never an error stack. (2) **Zero-match:** if all computed similarities are zero (query outside vocabulary), the engine shall return a `zero-match` status with a helpful message. (3) **Threshold fallback:** when configured, profiles below `recommender_threshold` similarity are excluded; if this empties the result list, the engine falls back to the best available profiles with a `partial-match` status clearly labeled.
+- **Rationale:** Robust UX consistent with the project's friendly-error philosophy (`FR-106`, `FR-111`) and the ML Engine's guard rails (`FR-199`).
+- **Dependencies:** FR-239, FR-242
+- **Acceptance Criteria:** Tests cover all three paths (min-skills guidance, zero-match, partial-match fallback); none crash, all produce user-facing messages.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+### Category S7 — CLI (FR-245)
+
+**FR-245 — CLI Structured Output**
+- **Priority:** P0
+- **Description:** `python main.py recommend --skills "..."` shall print a boxed, ranked list (rank, title, similarity %, matched skills) using the existing formatting utilities (`FR-126`–`FR-133`), and honor `--plain` mode (`FR-133`). Output derives exclusively from structured `RecommendationResult` objects — the CLI never re-computes ranking logic.
+- **Rationale:** Single rendering path, no duplicated logic (`FR-145`'s "shared engine, no duplication" principle applied to the new engine).
+- **Dependencies:** FR-239, FR-243, FR-133
+- **Acceptance Criteria:** The documented CLI invocation prints exactly 3 ranked rows in a boxed layout; `--plain` prints the same data with zero ANSI codes and zero box-drawing characters.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+### Category S8 — GUI (FR-246)
+
+**FR-246 — GUI "Career Recommender" Tab**
+- **Priority:** P2
+- **Description:** The optional Tkinter GUI (Category Q) shall gain a "Career Recommender" tab with a skills entry field, a "Recommend" button, and a results list, calling the identical engine function as the CLI (mirroring `FR-224`'s shared-engine principle). Results render with rank, title, and similarity.
+- **Rationale:** Full feature parity between CLI and GUI, consistent with Part I's design philosophy.
+- **Dependencies:** FR-144, FR-245
+- **Acceptance Criteria:** Entering `Python, SQL, Machine Learning` and clicking "Recommend" displays the same top-3 as the CLI.
+- **Edge Cases:** Empty entry → inline validation message; the GUI remains responsive.
+- **Example:** N/A.
+
+### Category S9 — Cross-Cutting (FR-247 – FR-248)
+
+**FR-247 — Recommender Logging & Error Handling**
+- **Priority:** P0
+- **Description:** The recommender shall use the existing rotating logger (`FR-096`) with a distinct `decodebot.recommender` logger tag, logging corpus loads, query tokens, and ranking summaries at `INFO`. All error paths (missing corpus, invalid CSV, dependency import failures, malformed arguments) shall route through the friendly-message + logged-traceback + continue-session pattern (`FR-106`, `FR-111`, `FR-228`), never crashing the CLI/GUI process.
+- **Rationale:** Single unified operational log and uniform error UX across all engines.
+- **Dependencies:** FR-096, FR-228
+- **Acceptance Criteria:** A 1,000-iteration fuzz test covering malformed `recommend` invocations produces zero unhandled exceptions.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-248 — Recommender Testing & Acceptance**
+- **Priority:** P1
+- **Description:** The recommender shall be delivered with the TC-REC-* test suite and acceptance criteria defined in the Testing Strategy and Acceptance Criteria sections below, including ≥ 90% line coverage on `decodebot/recommender/` and full isolation/startup re-verification.
+- **Rationale:** Every engine ships with the same test rigor as the ML Engine (`NFR-076`).
+- **Dependencies:** FR-233–FR-247
+- **Acceptance Criteria:** All TC-REC-* tests pass; isolation and startup gates green; Week 1 and Week 2 compliance matrices still pass 100%.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+> **End of Part III Functional Requirements.** Total: **16 new Functional Requirements (FR-233 – FR-248)**. Combined project total upon Wave 3 implementation: **248 Functional Requirements (FR-001 – FR-248)**.
+
+## Non-Functional Requirements — Content-Based Tech Stack Recommendation Engine (NFR-086 – NFR-090, NFR-096)
+
+> New Non-Functional Requirements for Week 3. Combined project total upon Wave 3 implementation: **96 Non-Functional Requirements (NFR-001 – NFR-096)**.
+
+| ID | Category | Requirement | Target / Metric | Priority |
+|---|---|---|---|---|
+| NFR-086 | Performance | Recommender ranking latency (query → ranked list) | < 100ms on reference hardware with the built-in corpus | P1 |
+| NFR-087 | Reproducibility | Deterministic ranking | Bit-identical ranked output across repeated runs (FR-243) | P0 |
+| NFR-088 | Isolation | Zero recommender imports in the Chatbot Engine | `tests/test_wave3_isolation.py` passes (FR-233) | P0 |
+| NFR-089 | Testing | Recommender test coverage | ≥ 90% line coverage on `decodebot/recommender/` (FR-248) | P1 |
+| NFR-090 | Startup performance | Lazy recommender imports preserve chatbot startup | Chatbot-only session starts in < 300ms with recommender deps installed (FR-234) | P1 |
+| NFR-096 | Documentation | Wave 3 engine fully documented | `docs/RECOMMENDER_GUIDE.md`, extended `docs/CONFIGURATION.md`, README + CHANGELOG updates | P1 |
+
+## User Stories — Week 3 Additions
+
+- As a student, I want to type the skills I've learned and get a recommended career path, so that I can see how my skills map to real tech-stack roles.
+- As a student, I want the recommender to stay strictly additive to my Week 1 and Week 2 work, so that I don't lose credit for previously-completed, previously-graded deliverables.
+- As a recruiter, I want a live, screen-share-friendly "skills → career match" demo, so that I can quickly gauge applied information-retrieval skill.
+- As an end user (non-technical, GUI context), I want to type plain skills into the GUI and see a ranked result, so that I don't need to learn CLI syntax.
+- As an instructor, I want a clean isolation gate for the new package, so that I can verify the recommender never touches the rule-based core.
+
+## Use Cases — Week 3 Additions
+
+```mermaid
+graph LR
+    U((User / Student))
+    U --> UC25[Enter Skills via CLI --skills]
+    U --> UC26[Enter Skills via GUI Recommender Tab]
+    UC25 --> R[Rank Careers by Cosine Similarity]
+    UC26 --> R
+    R --> UC27[View Top-N Ranked Career Matches]
+    R --> UC28[View Cold-Start / Zero-Match Guidance]
+```
+
+| Use Case | Actor | Preconditions | Main Flow | Postconditions |
+|---|---|---|---|---|
+| UC-25: Recommend a career from CLI skills | User / Student | `recommend` command registered | Run `python main.py recommend --skills "Python, SQL, Machine Learning"`; skills normalized and vectorized; profiles ranked by cosine similarity | Top-N ranked `RecommendationResult` printed in a boxed list |
+| UC-26: Recommend a career from the GUI | User (GUI) | GUI running with Career Recommender tab | Type skills in the entry field, click "Recommend" | Same top-N results as the CLI displayed in the tab |
+| UC-27: View top-N ranked matches | User | ≥ 1 profile with non-zero similarity | Ranking returns the best matches with similarity % and matched skills | Ranked list with deterministic order |
+| UC-28: Cold-start / zero-match guidance | User | No/few skills, or query outside vocabulary | Engine detects the condition and returns guidance | Friendly guidance message; no crash |
+
+## Architecture — Content-Based Tech Stack Recommendation Engine
+
+### Updated System Architecture (Three Engines)
+
+```mermaid
+graph TB
+    subgraph "DecodeBot AI — Full System (Week 1 + Week 2 + Week 3)"
+        MAIN[main.py] --> APP[core/app.py]
+        APP --> CHATBOT[Chatbot Engine<br/>core/, rules/, gui/, utils/<br/>100% rule-based, unchanged]
+        APP --> MLAPP[ML Engine Bootstrap<br/>ml/app_ml.py]
+        APP --> RECAPP[Recommender Bootstrap<br/>recommender/app_recommender.py]
+
+        MLAPP --> MLMODS[ml/* — dataset, train, predict, evaluate]
+        RECAPP --> REC[recommender/corpus.py<br/>normalization.py, features.py, ranker.py, result.py]
+
+        CHATBOT -.no dependency.-x MLAPP
+        MLAPP -.no dependency.-x RECAPP
+        CHATBOT -.no dependency.-x RECAPP
+
+        style CHATBOT fill:#e0f7fa
+        style MLAPP fill:#fff3e0
+        style RECAPP fill:#e8f5e9
+    end
+```
+
+### Recommender Pipeline (Content-Based)
+
+```mermaid
+flowchart LR
+    Q[Skills Query<br/>"Python, SQL, ML"] --> N[Normalize Skills<br/>FR-240]
+    N --> V[TF-IDF Transform<br/>shared fitted vocabulary<br/>FR-241]
+    C[Career Corpus<br/>FR-236 / FR-237] --> V2[TF-IDF Fit on Corpus<br/>FR-241]
+    V2 --> M[Document-Term Matrix]
+    V --> S[Cosine Similarity<br/>FR-242]
+    M --> S
+    S --> R[Deterministic Top-N Ranking<br/>FR-243]
+    R --> F[Fallback Handling<br/>FR-244]
+    F --> O[RecommendationResult<br/>FR-238 / FR-245]
+```
+
+### Module Responsibilities — Content-Based Tech Stack Recommendation Engine
+
+| Module | Responsibility |
+|---|---|
+| `decodebot/recommender/corpus.py` | Built-in corpus, CSV loading, validation, and the `CareerProfile`/`SkillSet` data model (FR-236–FR-238) |
+| `decodebot/recommender/normalization.py` | Skill-token normalization and canonical abbreviation mapping (FR-240) |
+| `decodebot/recommender/features.py` | Single-vocabulary TF-IDF vectorization of corpus and query (FR-241) |
+| `decodebot/recommender/ranker.py` | Cosine similarity ranking, deterministic tie-breaking, Top-N clamping (FR-242–FR-243) |
+| `decodebot/recommender/fallbacks.py` | Cold-start, zero-match, and threshold partial-match fallbacks (FR-244) |
+| `decodebot/recommender/result.py` | `RecommendationResult` dataclass and rendering helpers (FR-238, FR-245) |
+| `decodebot/recommender/app_recommender.py` | Thin bootstrap wiring `recommend` into the existing dispatcher, config, and logger (FR-235, FR-239, FR-245, FR-247) |
+
+### Folder Structure Additions — Content-Based Tech Stack Recommendation Engine
+
+```
+├── decodebot/
+│   └── recommender/
+│       ├── __init__.py
+│       ├── app_recommender.py     # CLI wiring (FR-239, FR-245)
+│       ├── corpus.py               # FR-236–FR-238
+│       ├── normalization.py        # FR-240
+│       ├── features.py             # FR-241
+│       ├── ranker.py               # FR-242–FR-243
+│       ├── fallbacks.py            # FR-244
+│       └── result.py               # FR-238, FR-245
+├── datasets/
+│   └── careers_corpus.csv           # Optional custom corpus example (FR-237)
+├── tests/
+│   ├── test_wave3_isolation.py      # FR-233 isolation gate
+│   ├── test_recommender_corpus.py
+│   ├── test_recommender_features.py
+│   ├── test_recommender_ranker.py
+│   ├── test_recommender_cli.py
+│   └── test_gui_recommender.py
+├── docs/
+│   └── RECOMMENDER_GUIDE.md
+```
+
+## Configuration — Content-Based Tech Stack Recommendation Engine
+
+Extends the existing configuration system (`FR-088`) with the keys introduced in `FR-235`:
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `recommender_corpus` | string | `"builtin"` | `"builtin"` uses the bundled corpus (FR-236); a CSV file path uses the custom corpus (FR-237) |
+| `recommender_top_n` | int | `3` | Number of ranked results to return; valid `1–10`, clamped to corpus size (FR-242) |
+| `recommender_min_skills` | int | `3` | Minimum skills required before ranking; below this the engine returns guidance (FR-244) |
+| `recommender_threshold` | float | `0.0` | Optional minimum similarity for inclusion; `0.0` disables threshold exclusion (FR-244) |
+| `recommender_random_state` | int | `42` | Reproducibility seed for any future shuffling/vectorizer options (FR-243) |
+
+All keys follow the same per-key validation and default-fallback behavior established in `FR-094` — a single invalid recommender key never prevents the application from starting.
+
+## Logging — Content-Based Tech Stack Recommendation Engine
+
+- Uses the existing rotating file handler (`FR-096`) — no separate log file.
+- Logger name: `decodebot.recommender` (sub-loggers `decodebot.recommender.corpus`, `decodebot.recommender.ranker`, etc., where useful).
+- Logged at `INFO`: corpus load events, normalized query tokens, ranking summaries (top match titles + similarity).
+- Logged at `WARNING`: config fallback to default, corpus validation fallback to builtin, zero-match/partial-match fallbacks triggered.
+- Logged at `ERROR`: corpus load failures, vectorization failures, CSV validation failures — always with a caught, non-crashing recovery path (`FR-247`).
+- **Never logged:** full raw corpus text or full query strings beyond the normalized token list.
+
+## Error Handling — Content-Based Tech Stack Recommendation Engine
+
+| Scenario | Behavior | Related FR |
+|---|---|---|
+| No `--skills` or fewer than `recommender_min_skills` | Friendly guidance message listing example skills | FR-244 |
+| Query tokens all outside the fitted vocabulary | `zero-match` status with a helpful message | FR-244, FR-241 |
+| Threshold exclusion empties the result list | Falls back to best available profiles with `partial-match` label | FR-244 |
+| Corpus CSV missing required columns | Friendly error naming the offending column(s) | FR-237 |
+| Empty-skills or duplicate-title corpus entry | Corpus validation rejects it with a friendly error | FR-238 |
+| ML dependency import failure inside the recommender | Friendly message; session continues (fuzz-tested) | FR-247 |
+| Invalid `recommender_top_n` / `recommender_threshold` value | Config falls back to default with a logged warning | FR-235 |
+
+## Coding Standards — Content-Based Tech Stack Recommendation Engine Additions
+
+- **Library scope boundary (hard rule):** `scikit-learn`, `pandas`, and `numpy` may be imported **only** within `decodebot/ml/` and `decodebot/recommender/` (plus dedicated tests and the thin CLI/GUI wiring files that call public functions). No file under `decodebot/core/`, `decodebot/rules/`, or `decodebot/gui/` may import these libraries or `decodebot.recommender` (`FR-233`, enforced by `tests/test_wave3_isolation.py`).
+- **Lazy import discipline:** any module-level import of ML libraries inside `decodebot/recommender/` is forbidden; imports occur inside the functions that need them (or behind a lazy bridge), mirroring `FR-232`.
+- **Type hints:** all recommender functions use type hints, including the `CareerProfile`, `SkillSet`, and `RecommendationResult` dataclasses defined once in `decodebot/recommender/result.py`.
+- **Docstrings:** Google-style convention (FR/Args/Returns/Raises) with a `Reference:` line linking back to the relevant FR.
+- **Determinism discipline:** ranking must never depend on set/hash ordering; ties are broken by stable keys (`FR-243`).
+- **Naming conventions, no bare `except: pass`, and complexity ceilings:** identical to Part I and Part II standards.
+
+## Testing Strategy — Content-Based Tech Stack Recommendation Engine
+
+> New tests are prefixed `TC-REC-` and mirror the rigor of the Part I and Part II testing specifications.
+
+| Test ID | Description | Expected Result |
+|---|---|---|
+| TC-REC-001 | Built-in corpus loads and passes integrity checks | ≥ 20 entries, ≥ 6 domains, non-empty skills, no duplicate titles |
+| TC-REC-002 | Custom CSV corpus loads | Valid rows load and are recommendable |
+| TC-REC-003 | Malformed CSV (missing columns, empty skills) rejected | Friendly error, never a crash |
+| TC-REC-004 | Skill normalization equivalence | `"Python, SQL, machine learning"` ≡ `"python,sql,machine learning"` |
+| TC-REC-005 | Single fitted TF-IDF vocabulary invariant | Query vector dimensionality equals profile matrix dimensionality |
+| TC-REC-006 | Top-N default-3 ranking on the canonical query | `Python, SQL, Machine Learning` → exactly 3 results, highest-similarity first |
+| TC-REC-007 | Determinism & tie-breaking | Two runs byte-identical; ties broken by corpus order, then title |
+| TC-REC-008 | Cold start / min-skills guidance | Fewer than 3 skills → friendly guidance, no crash |
+| TC-REC-009 | Zero-match & partial-match fallbacks | Out-of-vocabulary → zero-match; threshold exclusion → partial-match |
+| TC-REC-010 | CLI boxed output, `--plain`, and GUI parity | Boxed top-3 matches GUI; `--plain` has zero ANSI/box chars |
+| TC-REC-011 | Fuzz: 1,000 malformed `recommend` invocations | Zero unhandled exceptions (FR-247) |
+| TC-REC-012 | Isolation + startup gates | `tests/test_wave3_isolation.py` passes; chatbot startup < 300ms (NFR-088, NFR-090) |
+
+> **Week 3 Test Count Summary:** 12 itemized TC-REC-* cases plus unit/integration/regression/negative tests per module (targeted at ≥ 90% line coverage on `decodebot/recommender/`, `NFR-089`), on top of the Week 1 + Week 2 suites.
+
+## Acceptance Criteria — Content-Based Tech Stack Recommendation Engine
+
+| Feature Area | Completion Criteria |
+|---|---|
+| Package & isolation | ☑ `decodebot/recommender/` isolated ☑ zero imports in core/rules/gui ☑ lazy imports verified ☑ chatbot startup unaffected |
+| Dataset | ☑ built-in corpus loads (≥ 20 entries, ≥ 6 domains) ☑ custom CSV works ☑ validation rejects malformed data |
+| Input & normalization | ☑ `recommend` command registered in `COMMANDS` ☑ `--skills` parses ☑ normalization equivalence verified |
+| Feature extraction | ☑ single fitted TF-IDF vocabulary ☑ query shares the vocabulary |
+| Ranking | ☑ cosine similarity ☑ Top-N default 3, validated 1–10 ☑ deterministic tie-breaking |
+| Fallbacks | ☑ min-skills guidance ☑ zero-match status ☑ partial-match fallback |
+| CLI | ☑ boxed ranked output ☑ `--plain` support ☑ never crashes on malformed input |
+| GUI | ☑ Career Recommender tab calls the identical engine function |
+| Testing | ☑ full TC-REC-* suite passes ☑ ≥ 90% coverage on `decodebot/recommender/` ☑ isolation gate green |
+| Documentation | ☑ `docs/RECOMMENDER_GUIDE.md` complete ☑ `docs/CONFIGURATION.md` extended ☑ README/CHANGELOG updated |
+
+## GitHub Standards — Week 3 Additions
+
+- **README:** a new "Content-Based Tech Stack Recommendation Engine" section following the ML Engine section, including a transcript/screenshot of `recommend --skills "Python, SQL, Machine Learning"`.
+- **Badges:** add a "Content-Based Recommendation" badge alongside the existing ones; re-annotate the "100% Rule-Based" badge as describing the Chatbot Engine only.
+- **`requirements.txt` clarity:** the recommender reuses the existing ML dependency section (no new required packages); note this in the README dependency explanation.
+- **Releases:** the `v3.0.0` GitHub Release notes explicitly call out "Added: Content-Based Tech Stack Recommendation Engine (Week 3)" and "Preserved: Chatbot Engine (Week 1), Machine Learning Engine (Week 2) — unchanged."
+
+## Risks — Week 3 Additions
+
+### Known Limitations (Week 3)
+- The built-in corpus is small (~24 curated profiles), so recall is bounded by corpus breadth — users with niche skill sets may get partial matches. This is expected and appropriate for a portfolio-grade, offline system; custom CSV corpora (`FR-237`) mitigate it.
+- Content-based recommendation only finds profiles whose text shares vocabulary with the query — it cannot generalize from skills to semantically related but differently-worded skills (no embeddings are used by design).
+
+### Trade-offs (Week 3)
+- Reusing TF-IDF + cosine similarity (already available through the Week 2 dependency scope) adds zero new required dependencies and keeps the pipeline fully deterministic and explainable, at the cost of no semantic synonym handling.
+- A built-in corpus improves out-of-the-box demos but requires curation; CSV support transfers that burden to users who want custom catalogs.
+
+### Future Improvements (Week 3 → Beyond)
+- Add optional synonym/alias expansion tables and, in a future, separately-specified week, optional semantic embeddings — without disturbing the Chatbot Engine, the ML Engine, or the deterministic content-based core documented here.
+- Expose a `--top-n` CLI override (validated 1–10) and a "why this match" explanation listing the matched skills per result (Stretch Goal).
+
+---
+---
+
+# PART IV — WEEK 4: OCR IMAGE/TEXT RECOGNITION ENGINE (OPTIONAL EXTENSION)
+
+> **Status: PLANNED and OPTIONAL-EXTENSION (not yet implemented).**
+>
+> **Scope of Part IV:** This part documents the **OCR Image/Text Recognition Engine**. Of the two optional extensions considered for Week 4, the **OCR path (OpenCV + `pytesseract`)** was selected over the object-detection path. This part is **additive only** and **optional** — nothing in Parts I–III depends on it, and the project remains complete and gradeable without it. OpenCV (`opencv-python-headless`) and `pytesseract` are **optional** dependencies installed only for this engine; Tesseract OCR itself is an external system binary invoked via `pytesseract`. This part is documented as **PLANNED**: no production code, tests, or dependencies are to be changed for it until the corresponding plan (`PLAN.md`, Wave 4, milestones W4-M1–W4-M6) is approved and implemented milestone by milestone, with a mandatory stop for user approval after each milestone.
+
+## Week 4 Executive Summary
+
+Week 4 adds a fourth, **optional** engine: **OCR Image/Text Recognition**, implemented with OpenCV for image preprocessing and Tesseract (via `pytesseract`) for text extraction. A user points the engine at a local PNG/JPEG image, which is preprocessed in a fixed pipeline — grayscale → Gaussian blur → deskew → adaptive thresholding (`FR-253`) — then fed to Tesseract in one of four supported page-segmentation modes (PSM `3`, `6`, `7`, `11`, default `6`; `FR-254`). Per-word confidence data is collected and filtered against a default **80% confidence threshold** (`FR-256`); every run returns exactly one status — `accepted`, `low_confidence`, `no_text`, or `error` (`FR-257`) — wrapped in a structured `RecognitionResult` (`FR-258`). A `recognize` CLI command and a Tkinter "Recognition" tab expose the identical engine (`FR-259`–`FR-260`). All processing is strictly local — no network, no uploads, no third-party OCR APIs (`FR-261`) — and oversized/malformed images are rejected before decoding to prevent resource exhaustion (`FR-252`).
+
+## Objectives — Week 4 Additions
+
+### Internship Objectives (Week 4)
+- OBJ-INT-11: Demonstrate computer-vision/OCR competency by extracting text from a local image with Tesseract.
+- OBJ-INT-12: Deliver the OCR engine as an optional, fully isolated module that never affects the Week 1–3 deliverables when absent.
+
+### Technical Objectives (Week 4)
+- OBJ-TECH-13: Implement the OCR engine as a fully isolated package (`decodebot/recognition/`) with **optional** dependencies imported lazily.
+- OBJ-TECH-14: Build and verify the standard OCR preprocessing stack: grayscale → Gaussian blur → deskew → adaptive thresholding.
+- OBJ-TECH-15: Deliver a confidence-filtered, status-bearing, structured `RecognitionResult` for consistent CLI/GUI/tests consumption.
+
+### Portfolio Objectives (Week 4)
+- OBJ-PORT-08: Demonstrate a fourth distinct AI competency (computer vision / OCR) in the portfolio, with a demoable "drop an image, get its text" feature.
+
+### Learning Objectives (Week 4)
+- OBJ-LEARN-10: Understand the practical OCR pipeline and why preprocessing quality directly determines Tesseract accuracy.
+- OBJ-LEARN-11: Understand confidence-based output filtering and status modeling for real-world extraction quality.
+
+### Stretch Goals (Week 4)
+- Add a `--psm auto` mode that scans the four supported PSM modes and reports the best-confidence result, and/or a configurable deskew-angle override.
+
+## Functional Requirements — OCR Image/Text Recognition Engine (FR-249 – FR-262)
+
+> New Functional Requirements for Week 4. Upon Wave 4 implementation the combined project total becomes **262 Functional Requirements (FR-001 – FR-262)**.
+
+### Category T1 — Package & Architecture (FR-249 – FR-251)
+
+**FR-249 — Recognition Package Isolation**
+- **Priority:** P0
+- **Description:** A new `decodebot/recognition/` package shall implement the OCR engine. No file under `decodebot/core/`, `decodebot/rules/`, or `decodebot/gui/` may import from `decodebot.recognition`, `cv2`, or `pytesseract`. The Chatbot Engine (Part I), ML Engine (Part II), and Recommender Engine (Part III) must behave identically before and after this package exists.
+- **Rationale:** Same architectural boundary discipline as `FR-229` and `FR-233`.
+- **Dependencies:** FR-229, FR-233
+- **Acceptance Criteria:** `tests/test_wave4_isolation.py` passes, confirming zero `cv2`/`pytesseract`/`decodebot.recognition` imports outside the allowed scope.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-250 — Optional Dependencies & Lazy Import**
+- **Priority:** P0
+- **Description:** `opencv-python-headless` and `pytesseract` shall be declared as **optional** dependencies (documented in `requirements-ocr.txt` and the README) and imported only when a `recognize` command first runs. All Week 1–3 functionality must work with neither package installed.
+- **Rationale:** Keeps the base install lean; OCR is an opt-in capability that must not burden every user.
+- **Dependencies:** FR-249
+- **Acceptance Criteria:** `python main.py` starts and the chatbot runs with neither OpenCV nor pytesseract installed; running `recognize` then yields a friendly installation message (see FR-255).
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-251 — Recognition Configuration Keys**
+- **Priority:** P1
+- **Description:** Extend the configuration system (`FR-088`) with recognition keys: `rec_image_path` (default `""`), `rec_psm` (default `6`, valid `3`/`6`/`7`/`11`), `rec_confidence_threshold` (default `0.80`, valid `0–1`), `rec_max_dimension` (default `4096` pixels), `rec_max_file_mb` (default `10`), `rec_output_dir` (default `"outputs/"`), `rec_overwrite` (default `false`). Per-key validation and default-fallback behavior (`FR-094`) applies.
+- **Rationale:** Consistency with `FR-226`/`FR-235` configuration philosophy.
+- **Dependencies:** FR-088, FR-094
+- **Acceptance Criteria:** All keys are documented in `docs/CONFIGURATION.md` (extended) with defaults and valid ranges.
+- **Edge Cases:** `rec_psm = 0` → falls back to default `6` with a logged warning.
+- **Example:** N/A.
+
+### Category T2 — Image Ingestion (FR-252)
+
+**FR-252 — Image Ingestion, Formats & Size Bounds**
+- **Priority:** P0
+- **Description:** The engine shall accept PNG and JPEG images via `rec_image_path` or the `recognize --image` argument. File existence is checked first (friendly error if missing). Before decoding, file size is checked against `rec_max_file_mb` (default `10`); after decode, the longest edge is checked against `rec_max_dimension` (default `4096`). Out-of-bounds images are rejected with a friendly error — oversized files are never fully loaded into memory.
+- **Rationale:** Prevents resource exhaustion from oversized or malformed images (`NFR-093`).
+- **Dependencies:** FR-251
+- **Acceptance Criteria:** Tests cover: missing file → friendly error; a synthetic > 10MB file → rejected; an image wider than 4096px → rejected; valid PNG and JPEG both process.
+- **Edge Cases:** Corrupt/undecodable image bytes → friendly error, no crash.
+- **Example:** N/A.
+
+### Category T3 — Preprocessing (FR-253)
+
+**FR-253 — Preprocessing Pipeline**
+- **Priority:** P0
+- **Description:** Before OCR, the image shall be preprocessed in this fixed order: (1) **grayscale** conversion, (2) **Gaussian blur** (5×5 kernel, configurable sigma), (3) **deskew** (automatic skew correction applied when estimated skew exceeds ~0.5°), and (4) **adaptive thresholding** (Gaussian adaptive threshold) producing a binary image for Tesseract. Each stage is a separate, testable function so a stage can be skipped or fixed independently.
+- **Rationale:** A clean binary image materially improves Tesseract accuracy — the standard OCR preprocessing stack.
+- **Dependencies:** FR-252
+- **Acceptance Criteria:** Unit tests verify: output is single-channel; the blur kernel is applied; deskew corrects a synthetic 3°-skewed image to within ~0.5°; thresholding yields a binary (0/255) image. The pipeline runs headless.
+- **Edge Cases:** A uniformly black or white image still runs the pipeline without crashing and yields a `no_text` status (FR-257).
+- **Example:** N/A.
+
+### Category T4 — Tesseract OCR Engine (FR-254 – FR-255)
+
+**FR-254 — Tesseract OCR & PSM Modes**
+- **Priority:** P0
+- **Description:** Text extraction shall use `pytesseract.image_to_data(...)` with `config` selecting one of PSM modes `3`, `6`, `7`, or `11` (default `6` per `rec_psm`). Per-word data (text, confidence, bounding box) shall be collected for downstream filtering (`FR-256`). Tesseract is invoked only on the preprocessed image (`FR-253`).
+- **Rationale:** `image_to_data` provides the word-level confidence needed for the 80% filtering requirement.
+- **Dependencies:** FR-253, FR-251
+- **Acceptance Criteria:** A fixture image with known text (e.g., `samples/sample_text.png`) extracts the expected words with per-word confidence values.
+- **Edge Cases:** Empty/blank image → no words → `no_text` status (FR-257).
+- **Example:** N/A.
+
+**FR-255 — Missing-Dependency & External-Tool Failure Handling**
+- **Priority:** P0
+- **Description:** If `cv2`/`pytesseract` are not installed, or the Tesseract binary is not found on `PATH`, the `recognize` command shall print a friendly, actionable message (which package/binary to install) and continue the session — never a traceback. This mirrors the graceful-degradation precedent of `FR-221`.
+- **Rationale:** OCR must fail softly; the chatbot session must never crash because OCR dependencies are absent.
+- **Dependencies:** FR-250, FR-228
+- **Acceptance Criteria:** Simulated missing imports and a missing Tesseract binary produce friendly messages and zero unhandled exceptions.
+- **Edge Cases:** Tesseract installed but OpenCV missing (or vice versa) → the same friendly handling.
+- **Example:** N/A.
+
+### Category T5 — Confidence & Output Filtering (FR-256 – FR-257)
+
+**FR-256 — Confidence Threshold & Word Filtering**
+- **Priority:** P0
+- **Description:** Words with confidence below `rec_confidence_threshold` (default `0.80`, i.e. 80%) shall be excluded from the final extracted text and reported separately in a `low_confidence_words` list. Confidence values (0–100 from Tesseract) are normalized to 0–1 for comparison. Words with empty text or empty bounding boxes are always excluded.
+- **Rationale:** Default 80% threshold per the Week 4 requirement; low-confidence words remain inspectable, never silently dropped.
+- **Dependencies:** FR-254, FR-251
+- **Acceptance Criteria:** On a fixture image, words with confidence < 80% appear in `low_confidence_words` and not in the extracted text; accepted text contains only words ≥ 80%.
+- **Edge Cases:** All words below threshold → accepted text empty → `low_confidence` status (FR-257).
+- **Example:** N/A.
+
+**FR-257 — Recognition Statuses**
+- **Priority:** P0
+- **Description:** Every recognition run returns exactly one status: `accepted` (≥ 1 word passed the threshold), `low_confidence` (words existed but none passed the threshold), `no_text` (no words detected at all), or `error` (any failure path). The status is exposed on the result object and rendered distinctly in CLI/GUI output.
+- **Rationale:** Machine-readable outcomes enable consistent CLI/GUI presentation and testing.
+- **Dependencies:** FR-256
+- **Acceptance Criteria:** Tests construct each status deterministically and verify the corresponding status string.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+### Category T6 — Output (FR-258)
+
+**FR-258 — Structured `RecognitionResult` & Output**
+- **Priority:** P0
+- **Description:** The engine shall return a structured `RecognitionResult` with fields: `status`, `text` (filtered), `full_text` (pre-filter), `words` (word, confidence, bbox per accepted word), `low_confidence_words`, `image_path`, `psm`, `duration_ms`. The CLI renders a boxed summary (status, character count, word count, confidence range) plus the extracted text, honoring `--plain` mode (`FR-133`). An optional `--save` flag writes the extracted text to `rec_output_dir` (default `outputs/`) **without overwriting** existing files unless `rec_overwrite=true`.
+- **Rationale:** Structured output consistent with `EvaluationReport` (`FR-205`) and `RecommendationResult` (`FR-238`).
+- **Dependencies:** FR-256, FR-257, FR-133
+- **Acceptance Criteria:** The documented CLI invocation prints status + text; `--save` writes a `.txt` file; an existing file with the same name is not overwritten unless `rec_overwrite=true`.
+- **Edge Cases:** Non-writable output directory → friendly error, no crash.
+- **Example:** N/A.
+
+### Category T7 — CLI & GUI (FR-259 – FR-260)
+
+**FR-259 — CLI `recognize` Command**
+- **Priority:** P0
+- **Description:** A new `recognize` command shall be registered in the `COMMANDS` registry (`FR-058`), accepting `--image` (path) and optional `--psm` (`3`/`6`/`7`/`11`, overriding `rec_psm`). Invocation: `python main.py recognize --image "samples/document.png" --psm 6`.
+- **Rationale:** Discoverability and CLI/GUI parity per `FR-222`.
+- **Dependencies:** FR-058, FR-252, FR-254
+- **Acceptance Criteria:** `help` lists `recognize`; the documented invocation on a bundled fixture image returns `accepted` status and expected text.
+- **Edge Cases:** Missing `--image` → friendly usage message; session continues.
+- **Example:** N/A.
+
+**FR-260 — GUI "Recognition" Tab**
+- **Priority:** P2
+- **Description:** The optional Tkinter GUI shall gain a "Recognition" tab with an image path field, "Browse"/"Recognize" buttons, and a text preview area, calling the identical engine function as the CLI. The status is shown prominently with a text label (per `NFR-028`, never color alone).
+- **Rationale:** Feature parity and a demoable visual result.
+- **Dependencies:** FR-144, FR-259
+- **Acceptance Criteria:** Selecting a fixture image and clicking "Recognize" displays the same status and text as the CLI; a missing file shows an inline error.
+- **Edge Cases:** The GUI remains responsive if OCR dependencies are missing (friendly message).
+- **Example:** N/A.
+
+### Category T8 — Security, Privacy & Testing (FR-261 – FR-262)
+
+**FR-261 — Local-Only Processing & Privacy**
+- **Priority:** P0
+- **Description:** All OCR processing is strictly local: zero network sockets opened, no telemetry, no image upload, and no third-party OCR APIs (consistent with `NFR-008`). Images and extracted text are written only to the configured local directories and never overwritten without `rec_overwrite`.
+- **Rationale:** Privacy guarantee for potentially sensitive documents.
+- **Dependencies:** NFR-008
+- **Acceptance Criteria:** A static scan finds zero network calls in `decodebot/recognition/`; a test verifies the save path never overwrites without opt-in.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+**FR-262 — Recognition Testing & Acceptance**
+- **Priority:** P1
+- **Description:** The recognition engine shall be delivered with the TC-OCR-* test suite and acceptance criteria defined below, including ≥ 90% line coverage on `decodebot/recognition/` and full isolation/startup re-verification. Optional-dependency and external-binary paths are tested via mocks/monkeypatching so CI never requires OpenCV or Tesseract.
+- **Rationale:** Same test rigor as the ML and recommender engines, without burdening CI with system OCR binaries.
+- **Dependencies:** FR-249–FR-261
+- **Acceptance Criteria:** All TC-OCR-* tests pass; isolation and startup gates green; Weeks 1–3 compliance matrices still pass 100%.
+- **Edge Cases:** N/A.
+- **Example:** N/A.
+
+> **End of Part IV Functional Requirements.** Total: **14 new Functional Requirements (FR-249 – FR-262)**. Combined project total upon Wave 4 implementation: **262 Functional Requirements (FR-001 – FR-262)**.
+
+## Non-Functional Requirements — OCR Image/Text Recognition Engine (NFR-091 – NFR-095, NFR-097)
+
+> New Non-Functional Requirements for Week 4. Combined project total upon Wave 4 implementation: **97 Non-Functional Requirements (NFR-001 – NFR-097)**.
+
+| ID | Category | Requirement | Target / Metric | Priority |
+|---|---|---|---|---|
+| NFR-091 | Isolation | OCR library imports confined to `decodebot/recognition/` | `tests/test_wave4_isolation.py` passes (FR-249) | P0 |
+| NFR-092 | Privacy | OCR runs entirely locally | Zero network I/O during any recognition session (FR-261) | P0 |
+| NFR-093 | Resource bounds | Image dimension/file-size limits prevent resource exhaustion | Images exceeding configured bounds rejected with a friendly error (FR-252) | P1 |
+| NFR-094 | Testing | OCR test coverage | ≥ 90% line coverage on `decodebot/recognition/` (FR-262) | P1 |
+| NFR-095 | Reliability | Graceful degradation without optional deps | Missing OpenCV/pytesseract/Tesseract yields a friendly message, never a crash (FR-255) | P0 |
+| NFR-097 | Documentation | Wave 4 engine fully documented | `docs/OCR_GUIDE.md`, extended `docs/CONFIGURATION.md`, README + CHANGELOG updates | P1 |
+
+## User Stories — Week 4 Additions
+
+- As an end user, I want to point the app at a local image and get its text, so that I can extract text without an online service.
+- As a privacy-conscious user, I want OCR to run fully offline, so that my documents never leave my machine.
+- As a student, I want the OCR engine to be optional, so that my Week 1–3 deliverables remain complete and gradeable without it.
+- As a reviewer, I want a demoable "drop an image, get its text" feature in both CLI and GUI, so that I can quickly verify the OCR pipeline.
+
+## Use Cases — Week 4 Additions
+
+```mermaid
+graph LR
+    U2((End User))
+    U2 --> UC29[Recognize Text from a Local Image via CLI]
+    U2 --> UC30[Recognize Text from a Local Image via GUI]
+    UC29 --> P[Preprocess: Grayscale / Blur / Deskew / Threshold]
+    UC30 --> P
+    P --> O[OCR via Tesseract + Confidence Filtering]
+    O --> UC31[View RecognitionResult with Status & Text]
+```
+
+| Use Case | Actor | Preconditions | Main Flow | Postconditions |
+|---|---|---|---|---|
+| UC-29: Recognize text via CLI | End User | `recognize` command registered; image exists | Run `python main.py recognize --image "samples/document.png" --psm 6`; image ingested and preprocessed; Tesseract extracts words; confidence filter applied | `RecognitionResult` printed with status + text |
+| UC-30: Recognize text via GUI | End User (GUI) | GUI running with Recognition tab | Select an image, click "Recognize" | Same status + text as the CLI displayed in the tab |
+| UC-31: View status & extracted text | End User | Recognition run completed | Result rendered as a boxed summary (status, char/word count, confidence range) + text | Status and text visible; low-confidence words inspectable |
+
+## Architecture — OCR Image/Text Recognition Engine
+
+### Updated System Architecture (Four Engines)
+
+```mermaid
+graph TB
+    subgraph "DecodeBot AI — Full System (Week 1 + Week 2 + Week 3 + Week 4)"
+        MAIN[main.py] --> APP[core/app.py]
+        APP --> CHATBOT[Chatbot Engine<br/>core/, rules/, gui/, utils/<br/>100% rule-based, unchanged]
+        APP --> MLAPP[ML Engine Bootstrap<br/>ml/app_ml.py]
+        APP --> RECAPP[Recommender Bootstrap<br/>recommender/app_recommender.py]
+        APP --> OCRAPP[Recognition Bootstrap<br/>recognition/app_recognition.py]
+
+        MLAPP --> MLMODS[ml/* — dataset, train, predict, evaluate]
+        RECAPP --> REC[recommender/* — corpus, features, ranker]
+        OCRAPP --> OCR[recognition/* — ingestor, preprocess, ocr_engine, filter, result]
+
+        CHATBOT -.no dependency.-x MLAPP
+        MLAPP -.no dependency.-x RECAPP
+        RECAPP -.no dependency.-x OCRAPP
+        CHATBOT -.no dependency.-x OCRAPP
+
+        style CHATBOT fill:#e0f7fa
+        style MLAPP fill:#fff3e0
+        style RECAPP fill:#e8f5e9
+        style OCRAPP fill:#fce4ec
+    end
+```
+
+### OCR Pipeline (Preprocess → Tesseract → Filter)
+
+```mermaid
+flowchart LR
+    IMG[PNG/JPEG Image<br/>FR-252 bounds check] --> GRAY[Grayscale]
+    GRAY --> BLUR[Gaussian Blur 5x5]
+    BLUR --> SKEW[Deskew<br/>if skew > ~0.5 deg]
+    SKEW --> THRESH[Adaptive Thresholding<br/>binary image]
+    THRESH --> TES[Pytesseract image_to_data<br/>PSM 3/6/7/11]
+    TES --> FILT[Confidence Filter<br/>>= 80% default]
+    FILT --> ST[Status + RecognitionResult<br/>FR-256 - FR-258]
+```
+
+### Module Responsibilities — OCR Image/Text Recognition Engine
+
+| Module | Responsibility |
+|---|---|
+| `decodebot/recognition/ingestor.py` | Existence/format/size/dimension validation and image decode (FR-252) |
+| `decodebot/recognition/preprocess.py` | Grayscale → Gaussian blur → deskew → adaptive threshold pipeline (FR-253) |
+| `decodebot/recognition/ocr_engine.py` | `pytesseract` wrapper, PSM modes, per-word data, missing-dependency handling (FR-254–FR-255) |
+| `decodebot/recognition/filter.py` | Confidence threshold filtering and low-confidence routing (FR-256) |
+| `decodebot/recognition/result.py` | `RecognitionResult` dataclass, status model, rendering helpers (FR-257–FR-258) |
+| `decodebot/recognition/app_recognition.py` | Thin bootstrap wiring `recognize` into the dispatcher, config, and logger (FR-251, FR-259–FR-260) |
+
+### Folder Structure Additions — OCR Image/Text Recognition Engine
+
+```
+├── decodebot/
+│   └── recognition/
+│       ├── __init__.py
+│       ├── app_recognition.py      # CLI wiring (FR-259)
+│       ├── ingestor.py              # FR-252
+│       ├── preprocess.py            # FR-253
+│       ├── ocr_engine.py            # FR-254–FR-255
+│       ├── filter.py                # FR-256
+│       └── result.py                # FR-257–FR-258
+├── samples/
+│   ├── README.md                    # Fixture image provenance/usage notes
+│   └── sample_text.png              # Bundled fixture image (FR-254 acceptance)
+├── requirements-ocr.txt             # Optional deps: opencv-python-headless, pytesseract (FR-250)
+├── tests/
+│   ├── test_wave4_isolation.py      # FR-249 isolation gate
+│   ├── test_recognition_ingestion.py
+│   ├── test_recognition_preprocess.py
+│   ├── test_recognition_ocr.py
+│   ├── test_recognition_filter.py
+│   ├── test_recognition_output.py
+│   ├── test_recognition_cli.py
+│   └── test_gui_recognition.py
+├── docs/
+│   └── OCR_GUIDE.md
+```
+
+## Configuration — OCR Image/Text Recognition Engine
+
+Extends the existing configuration system (`FR-088`) with the keys introduced in `FR-251`:
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `rec_image_path` | string | `""` | Default image path when `--image` is not supplied (FR-252) |
+| `rec_psm` | int | `6` | Tesseract page-segmentation mode; valid `3`/`6`/`7`/`11` (FR-254) |
+| `rec_confidence_threshold` | float | `0.80` | Minimum per-word confidence (0–1, normalized) to include a word (FR-256) |
+| `rec_max_dimension` | int | `4096` | Maximum longest-edge dimension in pixels (FR-252, NFR-093) |
+| `rec_max_file_mb` | int | `10` | Maximum input file size in MB (FR-252, NFR-093) |
+| `rec_output_dir` | string | `"outputs/"` | Directory for `--save` text output (FR-258) |
+| `rec_overwrite` | boolean | `false` | Whether `--save` may overwrite an existing file (FR-258, FR-261) |
+
+All keys follow the same per-key validation and default-fallback behavior established in `FR-094`.
+
+## Logging — OCR Image/Text Recognition Engine
+
+- Uses the existing rotating file handler (`FR-096`) — no separate log file.
+- Logger name: `decodebot.recognition` (sub-loggers `decodebot.recognition.preprocess`, `decodebot.recognition.ocr_engine`, etc., where useful).
+- Logged at `INFO`: ingestion events (path, dimensions), preprocessing stages applied, OCR duration and status.
+- Logged at `WARNING`: config fallback to default, image rejected for size/dimension bounds, no-text/low-confidence statuses.
+- Logged at `ERROR`: decode failures, Tesseract failures, dependency/binary not found — always with a caught, non-crashing recovery path (`FR-255`).
+- **Never logged:** extracted image text content (privacy, `FR-261`).
+
+## Error Handling — OCR Image/Text Recognition Engine
+
+| Scenario | Behavior | Related FR |
+|---|---|---|
+| Image file not found | Friendly error; command aborts cleanly; session continues | FR-252 |
+| File > `rec_max_file_mb` or longest edge > `rec_max_dimension` | Rejected before full decode with a friendly error | FR-252, NFR-093 |
+| Corrupt/undecodable image bytes | Friendly error, no crash | FR-252 |
+| `cv2`/`pytesseract` not installed, or Tesseract binary not on `PATH` | Friendly, actionable install message; session continues | FR-255 |
+| No words detected after OCR | `no_text` status rendered distinctly | FR-257 |
+| Words present but all below 80% confidence | `low_confidence` status; words in `low_confidence_words` | FR-256, FR-257 |
+| `--save` target already exists and `rec_overwrite=false` | File not overwritten; friendly notice | FR-258 |
+| Non-writable output directory | Friendly error, no crash | FR-258 |
+
+## Coding Standards — OCR Image/Text Recognition Engine Additions
+
+- **Library scope boundary (hard rule):** `cv2` and `pytesseract` may be imported **only** within `decodebot/recognition/` (plus dedicated tests and the thin CLI/GUI wiring files that call public functions). No file under `decodebot/core/`, `decodebot/rules/`, `decodebot/gui/`, `decodebot/ml/`, or `decodebot/recommender/` may import them (`FR-249`, enforced by `tests/test_wave4_isolation.py`).
+- **Optional-dependency discipline:** `cv2`/`pytesseract` imports occur lazily inside the functions that need them, behind a documented import helper that raises a friendly error when missing (`FR-250`, `FR-255`).
+- **Type hints and docstrings:** identical to Parts I–III (Google-style, `Reference:` line, type-hinted signatures).
+- **Privacy discipline:** extracted text is never logged and never written outside `rec_output_dir` (`FR-261`).
+- **Naming conventions, no bare `except: pass`, and complexity ceilings:** identical to Parts I–III.
+
+## Testing Strategy — OCR Image/Text Recognition Engine
+
+> New tests are prefixed `TC-OCR-`. Optional-dependency and external-binary paths are tested via mocks/monkeypatching so CI never requires OpenCV or Tesseract installed.
+
+| Test ID | Description | Expected Result |
+|---|---|---|
+| TC-OCR-001 | Ingestion: valid PNG and JPEG load | Both formats decode and enter preprocessing |
+| TC-OCR-002 | Ingestion: missing file, oversize file, over-dimension image rejected | Friendly errors, never a crash |
+| TC-OCR-003 | Preprocessing: grayscale/blur/deskew/threshold stages | Correct outputs; deskew corrects 3° skew to < 0.5° |
+| TC-OCR-004 | Preprocessing: blank/black image runs pipeline | `no_text` status, no crash |
+| TC-OCR-005 | OCR: fixture image yields expected words + per-word confidence | Known text extracted with confidence values |
+| TC-OCR-006 | Filtering: < 80% words routed to `low_confidence_words` | Threshold behavior verified |
+| TC-OCR-007 | Statuses: `accepted` / `low_confidence` / `no_text` / `error` | Each status constructible and rendered |
+| TC-OCR-008 | Output: `RecognitionResult` fields; `--save` writes file; no overwrite without `rec_overwrite` | File behavior verified |
+| TC-OCR-009 | CLI: `recognize` in `help`; invocation on fixture image | `accepted` status + expected text |
+| TC-OCR-010 | Missing deps/binary (mocked) → friendly message | Zero unhandled exceptions (FR-255) |
+| TC-OCR-011 | Privacy: static scan for network calls in `decodebot/recognition/` | Zero network I/O (FR-261) |
+| TC-OCR-012 | Isolation + startup gates | `tests/test_wave4_isolation.py` passes; chatbot startup < 300ms |
+
+> **Week 4 Test Count Summary:** 12 itemized TC-OCR-* cases plus unit/integration/regression/negative tests per module (targeted at ≥ 90% line coverage on `decodebot/recognition/`, `NFR-094`), all runnable without OpenCV/Tesseract installed.
+
+## Acceptance Criteria — OCR Image/Text Recognition Engine
+
+| Feature Area | Completion Criteria |
+|---|---|
+| Package & isolation | ☑ `decodebot/recognition/` isolated ☑ zero `cv2`/`pytesseract` imports in core/rules/gui/ml/recommender ☑ lazy optional imports ☑ chatbot startup unaffected |
+| Ingestion | ☑ PNG/JPEG supported ☑ missing file friendly error ☑ size/dimension bounds enforced |
+| Preprocessing | ☑ grayscale ☑ Gaussian blur ☑ deskew (3° → < 0.5°) ☑ adaptive thresholding ☑ headless |
+| OCR | ☑ PSM 3/6/7/11 supported ☑ default PSM 6 ☑ per-word confidence collected ☑ missing-dependency friendly handling |
+| Filtering | ☑ default 80% threshold ☑ low-confidence words routed separately |
+| Statuses | ☑ `accepted` ☑ `low_confidence` ☑ `no_text` ☑ `error` |
+| Output | ☑ structured `RecognitionResult` ☑ boxed CLI summary + text ☑ `--save` never overwrites without opt-in |
+| CLI & GUI | ☑ `recognize` in `help` ☑ GUI Recognition tab calls the identical engine function |
+| Privacy | ☑ zero network I/O ☑ no telemetry/upload ☑ local-only writes |
+| Testing | ☑ full TC-OCR-* suite passes (CI without OpenCV/Tesseract) ☑ ≥ 90% coverage on `decodebot/recognition/` |
+| Documentation | ☑ `docs/OCR_GUIDE.md` complete ☑ `docs/CONFIGURATION.md` extended ☑ README/CHANGELOG updated |
+
+## GitHub Standards — Week 4 Additions
+
+- **README:** a new "OCR Image/Text Recognition Engine (Optional)" section, including a transcript/screenshot of `python main.py recognize --image "samples/sample_text.png"` and the GUI Recognition tab.
+- **`requirements-ocr.txt`:** optional-dependency manifest (`opencv-python-headless`, `pytesseract`) with pinned minimum versions and install instructions, clearly labeled "optional — only needed for the Week 4 OCR engine."
+- **Releases:** the `v3.1.0` GitHub Release notes explicitly call out "Added (Optional): OCR Image/Text Recognition Engine (Week 4)" and "Preserved: Chatbot Engine (Week 1), ML Engine (Week 2), Recommender Engine (Week 3) — unchanged."
+
+## Risks — Week 4 Additions
+
+### Known Limitations (Week 4)
+- Tesseract accuracy depends heavily on image quality and preprocessing; complex layouts, handwriting, or low-resolution scans may yield low-confidence or incorrect text. The 80% threshold and status model surface this honestly rather than silently returning garbage.
+- The external Tesseract binary must be installed separately by the user; the engine can detect and explain its absence (`FR-255`) but cannot bundle it.
+
+### Trade-offs (Week 4)
+- OCR is an optional, separately-installed capability — a deliberate trade of convenience for keeping the base install lean and CI independent of system binaries.
+- OpenCV-headless was chosen over the desktop build so the pipeline works on headless servers/CI with no GUI toolkit dependency.
+
+### Future Improvements (Week 4 → Beyond)
+- Add a `--psm auto` mode scanning the four supported modes and reporting the best-confidence result (Stretch Goal).
+- Explore higher-level vision extensions (e.g., object detection) in a future, separately-specified week, without disturbing the deterministic OCR core documented here.
+
+---
+---
+
 ## Glossary
 
 | Term | Definition |
@@ -4258,6 +5091,13 @@ Minimum viable dataset size (exactly enough samples for a valid stratified split
 | **F1 Score** | The harmonic mean of precision and recall, balancing both into a single metric |
 | **Accuracy Mirage** | The phenomenon where high overall accuracy hides poor performance on minority classes, especially in imbalanced datasets |
 | **Model Persistence** | Saving a trained model to disk (via `joblib`) so it can be reloaded and reused without retraining |
+| **Content-Based Recommendation** | Recommending items by measuring the similarity between a query's content features and each candidate item's content features — here, TF-IDF vectors over skills/description text compared by cosine similarity |
+| **TF-IDF** | Term Frequency–Inverse Document Frequency — a weighting scheme that scores how important a term is to a document within a corpus |
+| **Cosine Similarity** | The cosine of the angle between two vectors, used here as a 0–1 content-similarity score between a skill query and a career profile |
+| **Top-N Recommendation** | Returning the N highest-scoring candidate items for a query (default 3, validated 1–10) |
+| **Optical Character Recognition (OCR)** | Extracting text from images using Tesseract, invoked via `pytesseract` |
+| **Page Segmentation Mode (PSM)** | A Tesseract setting controlling how an image is divided into lines/words/blocks; modes 3, 6, 7, and 11 are supported here (default 6) |
+| **Adaptive Thresholding** | Converting a grayscale image to binary using a locally-computed threshold, robust to uneven lighting |
 
 ---
 
@@ -4276,6 +5116,9 @@ Minimum viable dataset size (exactly enough samples for a valid stratified split
 11. Fisher, R.A. (1936). *The Use of Multiple Measurements in Taxonomic Problems* — original source of the Iris dataset, distributed via `sklearn.datasets.load_iris()`.
 12. `scikit-learn` Documentation — `KNeighborsClassifier`, `StandardScaler`, `train_test_split`, `confusion_matrix`, `classification_report`. [scikit-learn.org](https://scikit-learn.org).
 13. `pandas`, `numpy`, `matplotlib`, and `joblib` official documentation (used exclusively within `decodebot/ml/`).
+14. `scikit-learn` Documentation — `TfidfVectorizer`, `cosine_similarity`. [scikit-learn.org](https://scikit-learn.org).
+15. Tesseract OCR & `pytesseract` Documentation — PSM modes, `image_to_data`. [github.com/tesseract-ocr/tesseract](https://github.com/tesseract-ocr/tesseract), [pypi.org/project/pytesseract](https://pypi.org/project/pytesseract).
+16. OpenCV Documentation — `cvtColor`, `GaussianBlur`, `adaptiveThreshold`. [docs.opencv.org](https://docs.opencv.org).
 
 ---
 
