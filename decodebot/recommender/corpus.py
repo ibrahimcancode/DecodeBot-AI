@@ -1,10 +1,12 @@
 """Career corpus foundation for the DecodeBot Recommender Engine (FR-236-FR-238).
 
 This module provides the structured data model (``CareerProfile``,
-``SkillSet``, ``Corpus``, and the minimal ``RecommendationResult``), the
-built-in careers corpus, CSV corpus loading, and corpus validation. It is the
-entire W3-M1 dataset foundation: no ranking, TF-IDF, or recommendation logic
-lives here (those arrive in W3-M2/W3-M3).
+``SkillSet``, ``Corpus``), the built-in careers corpus, CSV corpus loading,
+and corpus validation. It is the W3-M1 dataset foundation: no ranking, TF-IDF,
+or recommendation logic lives here (those arrive in W3-M2/W3-M3).
+:class:`RecommendationResult` is finalized in
+:mod:`decodebot.recommender.result` (W3-M3) and re-exported here so the
+W3-M1 public API surface is unchanged.
 
 Only the Python standard library is used (``csv``, ``dataclasses``, ``os``,
 ``logging``); no ML library is imported at module scope (FR-233, FR-234).
@@ -27,6 +29,8 @@ import os
 from dataclasses import dataclass
 from typing import Iterable, Sequence
 
+from decodebot.recommender.result import RecommendationResult
+
 logger = logging.getLogger(__name__)
 
 BUILTIN_CORPUS_SOURCE = "builtin"
@@ -40,6 +44,26 @@ REQUIRED_CSV_COLUMNS: tuple[str, ...] = ("title", "skills", "description")
 
 _MIN_CORPUS_ENTRIES = 2
 """Minimum corpus entry count enforced by validation (FR-238)."""
+
+__all__ = [
+    "BUILTIN_CORPUS_DATA",
+    "BUILTIN_CORPUS_SOURCE",
+    "CareerProfile",
+    "Corpus",
+    "CorpusError",
+    "CorpusLoadError",
+    "CorpusValidationError",
+    "DEFAULT_DOMAIN",
+    "RecommendationResult",
+    "RecommenderError",
+    "REQUIRED_CSV_COLUMNS",
+    "SkillSet",
+    "builtin_corpus",
+    "load_corpus",
+    "load_csv_corpus",
+    "validate_corpus",
+]
+"""Public names re-exported from this module (incl. ``RecommendationResult``)."""
 
 
 class RecommenderError(Exception):
@@ -141,31 +165,6 @@ class CareerProfile:
         domain = self.domain.strip() or DEFAULT_DOMAIN
         object.__setattr__(self, "title", title)
         object.__setattr__(self, "domain", domain)
-
-
-@dataclass(frozen=True)
-class RecommendationResult:
-    """Structured recommendation output (FR-238, FR-245).
-
-    W3-M1 defines the minimal data model only; ranking behavior and rendering
-    helpers are finalized in W3-M3/W3-M4. The fields below mirror the typed
-    surface required by ``FR-238``.
-
-    Attributes:
-        title: Career role title.
-        skills: The matched profile's skills.
-        description: The matched profile's description.
-        similarity: Cosine similarity of this result (populated by ranking).
-        matched_skills: Skills of the query that matched this profile.
-
-    Reference: SPEC.md Part III — Category S2 / S7 (``RecommendationResult``).
-    """
-
-    title: str
-    skills: SkillSet
-    description: str = ""
-    similarity: float = 0.0
-    matched_skills: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
