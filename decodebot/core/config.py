@@ -26,6 +26,11 @@ DEFAULT_CONFIG: dict = {
     "models_dir": "models/",
     "ml_outputs_dir": "outputs/",
     "ml_log_level": "INFO",
+    "recommender_corpus": "builtin",
+    "recommender_top_n": 3,
+    "recommender_min_skills": 3,
+    "recommender_threshold": 0.0,
+    "recommender_random_state": 42,
 }
 
 CONFIG_SCHEMA: dict = {
@@ -53,6 +58,11 @@ CONFIG_SCHEMA: dict = {
     "models_dir": str,
     "ml_outputs_dir": str,
     "ml_log_level": str,
+    "recommender_corpus": str,
+    "recommender_top_n": int,
+    "recommender_min_skills": int,
+    "recommender_threshold": (int, float),
+    "recommender_random_state": int,
 }
 
 CONFIG_PATHS = [

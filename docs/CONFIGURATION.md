@@ -39,6 +39,24 @@ default fallback; an invalid ML key never prevents startup.
 | `ml_outputs_dir` | str | `"outputs/"` | Directory for generated visualizations |
 | `ml_log_level` | str | `"INFO"` | Minimum ML log level (inherits `log_level` by default) |
 
+## Recommender Keys (FR-235)
+
+All recommender settings flow through the shared config with per-key
+validation and default fallback; a single invalid recommender key never
+prevents startup (FR-094, FR-247).
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `recommender_corpus` | str | `"builtin"` | `"builtin"` uses the bundled careers corpus; a CSV file path uses the custom corpus (FR-236/237) |
+| `recommender_top_n` | int | `3` | Number of ranked results to return; valid `1-10`, clamped to corpus size (FR-242) |
+| `recommender_min_skills` | int | `3` | Minimum usable skills required before ranking; below this the engine returns guidance (FR-244) |
+| `recommender_threshold` | float | `0.0` | Optional minimum similarity for inclusion; `0.0` disables threshold exclusion (FR-244) |
+| `recommender_random_state` | int | `42` | Reproducibility seed for any future shuffling/vectorizer options (FR-243) |
+
+The `recommend` command reads `--skills` (comma- or space-separated) and
+honors `plain_mode` (`config.json`) or the `--plain` command-line flag
+(`FR-133`).
+
 ## Example
 
 ```json

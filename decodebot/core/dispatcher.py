@@ -1,3 +1,4 @@
+from decodebot.core.config import load_config
 from decodebot.core.intents import Intent
 from decodebot.core.session import SessionState
 from decodebot.core.responder import get_response
@@ -59,6 +60,13 @@ def dispatch(intent: Intent, session: SessionState) -> str:
         from decodebot.ml import app_ml
 
         return app_ml.dispatch_ml(intent, session)
+
+    elif intent == Intent.RECOMMEND:
+        from decodebot.recommender import app_recommender
+
+        config = getattr(session, "config", None) or load_config()
+        raw_input = getattr(session, "last_input", "") or ""
+        return app_recommender.handle_recommend(config, raw_input)
 
     elif intent == Intent.EMPTY_INPUT:
         return unknown.get_empty_input_response()

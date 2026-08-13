@@ -21,8 +21,9 @@ BANNER = f"""
 PROMPT = "You: "
 
 
-def run_session() -> int:
-    config = load_config()
+def run_session(config: dict | None = None) -> int:
+    if config is None:
+        config = load_config()
     session = SessionState()
     session.start_time = time.monotonic()
     session.config = config

@@ -17,6 +17,7 @@ COMMANDS: dict[str, tuple[str, Intent]] = {
     "models": ("List saved models", Intent.MODELS),
     "compare": ("Compare classifiers on the same split", Intent.COMPARE),
     "tune-k": ("Tune the KNN K value", Intent.TUNE_K),
+    "recommend": ("Recommend careers from your skills", Intent.RECOMMEND),
 }
 
 ML_COMMAND_NAMES: frozenset[str] = frozenset(
@@ -30,6 +31,8 @@ ML_COMMAND_NAMES: frozenset[str] = frozenset(
         "tune-k",
     }
 )
+
+RECOMMEND_COMMAND_NAMES: frozenset[str] = frozenset({"recommend"})
 
 ALIASES: dict[str, str] = {
     "?": "help",
@@ -62,15 +65,20 @@ def get_help_text(session=None) -> str:
     header = "I understand these commands:\n"
     items = []
     ml_items = []
+    rec_items = []
     for cmd in sorted(COMMANDS):
         desc = COMMANDS[cmd][0]
         if cmd in ML_COMMAND_NAMES:
             ml_items.append(f"  {cmd:<10} {desc}")
+        elif cmd in RECOMMEND_COMMAND_NAMES:
+            rec_items.append(f"  {cmd:<10} {desc}")
         else:
             items.append(f"  {cmd:<10} {desc}")
     body = "\n".join(items)
     if ml_items:
         body += "\n\nMachine Learning:\n" + "\n".join(ml_items)
+    if rec_items:
+        body += "\n\nRecommendations:\n" + "\n".join(rec_items)
     footer = f"\n\nDecodeBot AI v{__version__} — type a command to get started!"
     if session and getattr(session, "user_name", None):
         footer = f"\n\nType a command anytime, {session.user_name}!"
