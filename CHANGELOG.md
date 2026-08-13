@@ -1,5 +1,39 @@
 # Changelog
 
+## [3.0.0] - 2026-08-13
+
+> **Release note:** Added: Content-Based Tech Stack Recommendation Engine
+> (Week 3). Preserved: 100% rule-based Chatbot Engine (Week 1) and the
+> isolated Machine Learning Engine (Week 2), both unchanged and unaffected.
+
+### Added
+- Recommender Engine (Week 3) — isolated `decodebot/recommender/` package
+- `recommend` command wired into the shared `COMMANDS` registry with its own
+  "Recommendations" help section
+- Built-in careers corpus (≥ 20 profiles, ≥ 6 domains) + custom CSV corpus
+  loading with validation
+- Skill normalization: tokenization, canonical abbreviations, case-insensitive
+  de-duplication, three-skill minimum
+- Single fitted TF-IDF vocabulary shared by queries and profiles
+- Cosine-similarity ranking, Top-N default 3 (validated 1–10), deterministic
+  tie-breaking by corpus order then title
+- Guidance / zero-match / partial-match fallbacks with structured outcomes
+- Boxed CLI output with `--plain` / `plain_mode` support (zero box/ANSI chars)
+- GUI **Career Recommender** tab calling the identical engine function as the CLI
+- Recommender config keys (`recommender_corpus`, `recommender_top_n`,
+  `recommender_min_skills`, `recommender_threshold`, `recommender_random_state`)
+- `decodebot.recommender` logger tag for corpus loads, queries, and ranking summaries
+- Recommender isolation gate (`tests/test_wave3_isolation.py`), lazy imports,
+  and startup preservation (FR-233, FR-234)
+- Full `TC-REC-001`–`012` suite with 100% line coverage on
+  `decodebot/recommender/` (target ≥ 90%)
+- `docs/RECOMMENDER_GUIDE.md` and extended `docs/CONFIGURATION.md`
+
+### Changed
+- `__version__` bumped to 3.0.0
+- README documents the recommender with an example transcript
+- Help text groups recommend commands under a "Recommendations" section
+
 ## [Unreleased]
 
 ### Changed
