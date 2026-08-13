@@ -72,8 +72,10 @@ def _tkinter_gui(config: dict) -> None:
 
     chat_tab = tk.Frame(notebook, bg="#f0f0f0")
     ml_tab = tk.Frame(notebook, bg="#f0f0f0")
+    rec_tab = tk.Frame(notebook, bg="#f0f0f0")
     notebook.add(chat_tab, text="Chat")
     notebook.add(ml_tab, text="Machine Learning")
+    notebook.add(rec_tab, text="Career Recommender")
 
     chat_frame = tk.Frame(chat_tab, bg="#f0f0f0")
     chat_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
@@ -138,6 +140,9 @@ def _tkinter_gui(config: dict) -> None:
     ml_panel = _build_ml_panel(ml_tab, session)
     ml_panel.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
+    rec_panel = _build_recommender_panel(rec_tab, session)
+    rec_panel.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
     def _on_close():
         summary = _build_gui_summary(session)
         if summary:
@@ -185,6 +190,34 @@ def _build_ml_panel(parent, session):
 
     bot_name = session.config.get("bot_name", "DecodeBot")
     return MLPanel(parent, handlers=_ml_handlers(session), bot_name=bot_name)
+
+
+def _recommend_handlers(session):
+    """Bind the Career Recommender tab to the exact CLI function (FR-246).
+
+    The import is lazy so GUI startup never touches the recommender engine
+    (FR-233); the first Recommend click pays the import cost. The handler
+    builds the same ``recommend --skills "..."`` command the CLI dispatcher
+    passes, so GUI output is byte-for-byte identical to the terminal.
+    """
+    from decodebot.recommender import app_recommender
+
+    def recommend(skills):
+        raw = f'recommend --skills "{skills}"'
+        return app_recommender.handle_recommend(session.config, raw)
+
+    return {"recommend": recommend}
+
+
+def _build_recommender_panel(parent, session):
+    from decodebot.gui.recommender_panel import RecommenderPanel
+
+    bot_name = session.config.get("bot_name", "DecodeBot")
+    return RecommenderPanel(
+        parent,
+        recommend_handler=_recommend_handlers(session)["recommend"],
+        bot_name=bot_name,
+    )
 
 
 def _handle_input(root, chat_display, raw, session):
