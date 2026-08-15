@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements-dev.txt -r requirements.txt
+          pip install -r requirements-dev.txt -r requirements.txt -r requirements-ocr.txt
       - name: Run test suite
         run: python -m pytest -q
 

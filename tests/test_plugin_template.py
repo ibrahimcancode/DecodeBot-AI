@@ -1,9 +1,9 @@
 import importlib
+import importlib.util
 import os
 import sys
 import tempfile
 import textwrap
-from unittest.mock import patch
 
 
 class TestPluginInterface:
@@ -56,11 +56,13 @@ class TestPluginInterface:
                 f.write(plugin_code)
             sys.path.insert(0, tmp)
             try:
-                mod = importlib.import_module("thanks_plugin")
+                importlib.import_module("thanks_plugin")
                 from decodebot.core.responder import get_response
                 from decodebot.core.session import SessionState
+
                 session = SessionState()
                 from decodebot.core.intents import Intent
+
                 resp = get_response(Intent.EASTER_EGG, session)
                 assert isinstance(resp, str)
                 assert len(resp) > 0
@@ -69,7 +71,7 @@ class TestPluginInterface:
 
 
 class TestPluginAutoDiscovery:
-    def test_plugin_loaded_when_in_plugins_dir(self):
+    def test_plugin_loaded_when_in_plugins_dir(self, tmp_path):
         plugin_code = textwrap.dedent("""\
         import re
         from decodebot.core.intents import Intent
@@ -83,24 +85,14 @@ class TestPluginAutoDiscovery:
             return "testplugin" in normalized_text
         """)
 
-        plugins_dir = os.path.join(
-            os.path.dirname(__file__), "..", "decodebot", "plugins"
-        )
-        plugin_path = os.path.join(plugins_dir, "_test_discovery_plugin.py")
-        try:
-            with open(plugin_path, "w") as f:
-                f.write(plugin_code)
-            import importlib
-            spec = importlib.util.spec_from_file_location(
-                "_test_discovery_plugin", plugin_path
-            )
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            assert mod.matches("testplugin") is True
-            assert mod.matches("other") is False
-        finally:
-            if os.path.isfile(plugin_path):
-                os.remove(plugin_path)
+        plugin_path = tmp_path / "_test_discovery_plugin.py"
+        plugin_path.write_text(plugin_code, encoding="utf-8")
+        spec = importlib.util.spec_from_file_location("_test_discovery_plugin", str(plugin_path))
+        assert spec is not None and spec.loader is not None
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        assert mod.matches("testplugin") is True
+        assert mod.matches("other") is False
 
 
 class TestBrokenPluginIsolation:
@@ -119,8 +111,10 @@ class TestBrokenPluginIsolation:
     def test_core_intacts_after_bad_plugin_attempt(self):
         from decodebot.core.intents import Intent
         from decodebot.core.session import SessionState
+
         session = SessionState()
         from decodebot.core.rule_engine import classify_intent
+
         result = classify_intent("hello", session)
         assert result == Intent.GREETING
 

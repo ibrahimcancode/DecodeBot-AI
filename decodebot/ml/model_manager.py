@@ -411,7 +411,7 @@ def _validated_filename(name: str) -> str:
     filename = str(name).strip()
     if not filename:
         raise ModelManagerError("Model name must not be empty.")
-    if os.sep in filename or "/" in filename:
+    if "/" in filename or "\\" in filename:
         raise ModelManagerError(
             "Model names must not contain path separators; give a plain name "
             "like 'knn_iris' (FR-212)."
@@ -430,7 +430,7 @@ def _resolve_load_path(name_or_path: str, models_dir: str) -> str:
     FR-212 boundary check.
     """
     raw = os.path.normpath(name_or_path)
-    if os.path.isabs(raw) or os.sep in raw or "/" in raw:
+    if os.path.isabs(raw) or "/" in raw or "\\" in raw:
         return os.path.abspath(raw)
     if raw.endswith(MODEL_EXTENSION):
         return os.path.abspath(os.path.join(models_dir, raw))

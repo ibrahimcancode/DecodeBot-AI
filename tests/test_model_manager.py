@@ -78,7 +78,11 @@ def test_save_rejects_empty_and_separator_names(trained, tmp_path):
     with pytest.raises(mm.ModelManagerError, match="separators"):
         mm.save_model(trained, "sub/model", models_dir=str(tmp_path))
     with pytest.raises(mm.ModelManagerError, match="separators"):
-        mm.save_model(trained, "..\\escape", models_dir=str(tmp_path))
+        mm.save_model(trained, r"..\escape", models_dir=str(tmp_path))
+    with pytest.raises(mm.ModelManagerError, match="separators"):
+        mm.save_model(trained, "../escape", models_dir=str(tmp_path))
+    with pytest.raises(mm.ModelManagerError, match="separators"):
+        mm.save_model(trained, r"sub\model", models_dir=str(tmp_path))
 
 
 def test_load_reload_identical_predictions(trained, iris_split, tmp_path):
