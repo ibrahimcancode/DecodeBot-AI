@@ -12,15 +12,19 @@ PSM, threshold, duration, deskew outcome). The pure formatting helpers here
 This module depends only on the Python standard library at runtime; the
 ``processed_image`` field is an opaque reference (an OpenCV ``numpy`` array)
 and is deliberately excluded from equality/repr so the frozen dataclass stays
-cheap and deterministic.
+cheap and deterministic. :func:`save_text_output` performs the FR-258
+``--save`` file write with no-overwrite protection.
 
 Reference: SPEC.md Part IV — Categories T5-T6 (FR-256-FR-258).
 """
 
 from __future__ import annotations
 
+import pathlib
 from dataclasses import dataclass, field
 from typing import Any, Optional, Tuple
+
+from decodebot.recognition.errors import OutputError
 
 STATUS_ACCEPTED = "accepted"
 STATUS_LOW_CONFIDENCE = "low_confidence"
@@ -181,3 +185,59 @@ def confidence_range_text(words: Tuple[Word, ...]) -> str:
     if len(usable) == 1:
         return format_confidence(low)
     return f"{format_confidence(low)}-{format_confidence(high)}"
+
+
+DEFAULT_OUTPUT_DIR = "outputs/"
+"""Default output directory for the optional ``--save`` flag (FR-258, FR-251)."""
+
+
+def save_text_output(
+    text: str,
+    image_path: str,
+    output_dir: str = DEFAULT_OUTPUT_DIR,
+    overwrite: bool = False,
+) -> str:
+    """Write extracted text to ``{output_dir}/{image_stem}.txt`` (FR-258).
+
+    The output directory (and parents) is created if missing. An existing
+    target file is never overwritten unless ``overwrite`` is true — otherwise
+    a friendly :class:`OutputError` is raised so the CLI/GUI can degrade
+    gracefully (FR-258, FR-261).
+
+    Args:
+        text: The text to persist (the filtered extracted text).
+        image_path: The source image path; its stem names the output file.
+        output_dir: Output directory (default ``outputs/``).
+        overwrite: Allow overwriting an existing target file.
+
+    Returns:
+        The absolute path of the file written.
+
+    Raises:
+        OutputError: When the target exists without ``overwrite``, or when the
+            directory/file cannot be created or written (friendly message,
+            no crash — FR-258 edge case).
+
+    Reference: SPEC.md Part IV — FR-258, FR-261.
+    """
+    stem = pathlib.Path(image_path).stem or "recognition"
+    directory = pathlib.Path(output_dir)
+    target = directory / f"{stem}.txt"
+    if target.exists() and not overwrite:
+        raise OutputError(
+            f"Output file already exists: {target.name}. "
+            f"Set rec_overwrite=true to overwrite it."
+        )
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise OutputError(
+            f"Could not create output directory '{directory}'. Check that the " f"path is writable."
+        ) from exc
+    try:
+        target.write_text(text, encoding="utf-8")
+    except OSError as exc:
+        raise OutputError(
+            f"Could not write output file '{target.name}'. Check that the " f"path is writable."
+        ) from exc
+    return str(target.resolve())

@@ -256,7 +256,6 @@ def test_word_is_frozen_dataclass():
 
 
 def test_importing_ocr_engine_pulls_no_heavy_modules():
-    import importlib
     import subprocess
     import sys
 
@@ -297,7 +296,6 @@ def _has_cv2_and_pytesseract():
 )
 def test_real_env_run_ocr_graceful_and_no_unhandled_error():
     """Real cv2+pytesseract: pipeline runs; binary present → words, else OcrError."""
-    import importlib
     import cv2
 
     image = cv2.imread(FIXTURE_IMAGE)

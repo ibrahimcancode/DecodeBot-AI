@@ -47,7 +47,6 @@ def _rect_image(width=200, height=60):
 
 
 def _rotate(image, angle_deg):
-    np = _np()
     height, width = image.shape[:2]
     center = (width // 2, height // 2)
     matrix = cv2.getRotationMatrix2D(center, angle_deg, 1.0)
