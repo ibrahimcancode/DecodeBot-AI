@@ -24,8 +24,11 @@ Rule-based AI is transparent, predictable, and fully auditable. Every response c
 ```
 decodebot-ai/
 ├── main.py                     # Entry point (python main.py [--gui])
+├── streamlit_app.py            # Streamlit web demo entrypoint
+├── streamlit_helpers.py        # Pure helpers for the web demo (testable)
+├── packages.txt                # apt packages for Streamlit Community Cloud (Tesseract)
 ├── config.json                 # Configuration (chatbot + ML defaults)
-├── requirements.txt            # Production deps (split: chatbot core / ML)
+├── requirements.txt            # Production deps (chatbot / ML / web / OCR for Cloud)
 ├── pyproject.toml              # Packaging + lint/test tool config
 │
 ├── decodebot/                  # Main application source
@@ -137,6 +140,42 @@ Bot: Goodbye! Thanks for chatting!
 
 A GUI with Machine Learning and Career Recommender tabs is available via
 `python main.py --gui`.
+
+## Web Demo (Streamlit)
+
+A browser-based demo that reuses the same Chatbot, ML, Recommender, and OCR
+engines as the CLI/GUI — without duplicating business logic. The Tkinter
+desktop GUI remains available and unchanged.
+
+### Run locally
+
+```bash
+pip install -r requirements.txt
+# Optional OCR (also listed in requirements.txt for Cloud):
+#   pip install -r requirements-ocr.txt
+#   plus install the Tesseract binary on your PATH
+
+streamlit run streamlit_app.py
+```
+
+Then open the URL Streamlit prints (typically `http://localhost:8501`).
+
+### What the demo exposes
+
+- **Chatbot** — rule-based intents via the existing core dispatcher
+- **ML Playground** — train / evaluate / compare / predict on Iris
+- **Career Recommender** — TF-IDF + cosine skill matching
+- **OCR Recognition** — optional; degrades gracefully if OpenCV/Tesseract
+  are missing
+- **Architecture & About** — isolation overview
+
+### Streamlit Community Cloud
+
+- Entrypoint: `streamlit_app.py`
+- Python deps: `requirements.txt` (includes Streamlit + ML + OCR packages)
+- System package: `packages.txt` installs `tesseract-ocr` for the OCR tab
+- No Windows-only paths or secrets are required; sample OCR uses
+  `samples/sample_text.png`
 
 ## Machine Learning Engine
 
@@ -280,7 +319,7 @@ See [docs/OCR_GUIDE.md](docs/OCR_GUIDE.md) for full details.
 
 DecodeBot uses a clean layered architecture:
 
-- **Presentation Layer:** CLI REPL loop (`core/loop.py`) and Tkinter GUI (`gui/app_gui.py`)
+- **Presentation Layer:** CLI REPL loop (`core/loop.py`), Tkinter GUI (`gui/app_gui.py`), and Streamlit web demo (`streamlit_app.py`)
 - **Application Layer:** Intent dispatcher + response selector (`core/dispatcher.py`, `core/responder.py`)
 - **Domain Layer:** Rule engine + session state (`core/rule_engine.py`, `core/session.py`)
 - **Infrastructure Layer:** Config, logging, stats, history (`core/config.py`, `core/logger.py`, `core/stats.py`, `core/history.py`)

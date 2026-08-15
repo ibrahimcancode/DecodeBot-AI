@@ -19,6 +19,18 @@ dynamic = ["version"]
 [project.optional-dependencies]
 ml = ["scikit-learn>=1.3", "pandas>=1.5", "numpy>=1.24", "matplotlib>=3.6", "joblib>=1.2"]
 dev = ["pytest>=7", "coverage", "ruff", "black"]
+web = ["streamlit>=1.28.0"]
+ocr = ["opencv-python-headless>=4.8", "pytesseract>=0.3.10"]
+all = [
+    "scikit-learn>=1.3",
+    "pandas>=1.5",
+    "numpy>=1.24",
+    "matplotlib>=3.6",
+    "joblib>=1.2",
+    "streamlit>=1.28.0",
+    "opencv-python-headless>=4.8",
+    "pytesseract>=0.3.10",
+]
 
 [project.scripts]
 decodebot = "main:main"

@@ -1,0 +1,3 @@
+# System packages for Streamlit Community Cloud (apt).
+# Required by the OCR Recognition tab (Tesseract binary via pytesseract).
+tesseract-ocr

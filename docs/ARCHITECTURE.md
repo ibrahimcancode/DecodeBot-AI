@@ -7,6 +7,7 @@ DecodeBot AI is split into two engines that share nothing at runtime.
                      │   Presentation Layer       │
                      │  CLI (core/loop.py)        │
                      │  GUI (gui/app_gui.py)      │
+                     │  Web (streamlit_app.py)    │
                      └──────────────┬─────────────┘
                                     │
                      ┌──────────────▼─────────────┐
@@ -37,9 +38,9 @@ DecodeBot AI is split into two engines that share nothing at runtime.
 
 ## Chatbot Engine (Week 1)
 
-- **Presentation adapters** (`core/loop.py`, `gui/app_gui.py`) never contain
-  conversational logic; they only route input to the dispatcher and render
-  responses.
+- **Presentation adapters** (`core/loop.py`, `gui/app_gui.py`,
+  `streamlit_app.py`) never contain conversational logic; they only route
+  input to the dispatcher / engine bridges and render responses.
 - **Dispatcher** (`core/dispatcher.py`) maps an `Intent` to a handler. ML
   intents are routed to the ML bridge lazily — the `decodebot.ml` import
   happens inside the ML command branch, so startup stays dependency-free
