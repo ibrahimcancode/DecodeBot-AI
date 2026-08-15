@@ -1,0 +1,15 @@
+# Optional dependencies for the Week 4 OCR Image/Text Recognition Engine (FR-250).
+#
+# These packages are OPTIONAL: they are needed ONLY for the `recognize` command
+# and the GUI "Recognition" tab. The Chatbot (Week 1), ML (Week 2) and
+# Recommender (Week 3) engines work without them and never import them at
+# startup (FR-249, FR-250). Install only if you want OCR:
+#
+#     pip install -r requirements-ocr.txt
+#
+# You must ALSO install the external Tesseract OCR binary separately and put it
+# on PATH (the engine detects and explains its absence — FR-255). See
+# docs/OCR_GUIDE.md for exact Windows/macOS/Linux setup instructions.
+
+opencv-python-headless>=4.8
+pytesseract>=0.3.10
