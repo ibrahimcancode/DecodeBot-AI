@@ -42,6 +42,14 @@ from decodebot.recognition.ingestor import (
     ingest_image,
     validate_path,
 )
+from decodebot.recognition.ocr_engine import (
+    DEFAULT_PSM,
+    SUPPORTED_PSM_MODES,
+    OcrOutput,
+    ensure_tesseract_available,
+    run_ocr,
+    validate_psm,
+)
 from decodebot.recognition.result import (
     ALL_STATUSES,
     STATUS_ACCEPTED,
@@ -58,11 +66,13 @@ __all__ = [
     "ALL_STATUSES",
     "DEFAULT_MAX_DIMENSION",
     "DEFAULT_MAX_FILE_MB",
+    "DEFAULT_PSM",
     "DependencyUnavailableError",
     "ImageLoadError",
     "ImageValidationError",
     "IngestedImage",
     "OcrError",
+    "OcrOutput",
     "RecognitionError",
     "RecognitionResult",
     "STATUS_ACCEPTED",
@@ -71,6 +81,7 @@ __all__ = [
     "STATUS_NO_TEXT",
     "SUPPORTED_EXTENSIONS",
     "SUPPORTED_FORMATS_TEXT",
+    "SUPPORTED_PSM_MODES",
     "UnsupportedImageError",
     "UnsupportedPsmError",
     "Word",
@@ -79,7 +90,10 @@ __all__ = [
     "check_file_size",
     "confidence_range_text",
     "decode_image",
+    "ensure_tesseract_available",
     "format_confidence",
     "ingest_image",
+    "run_ocr",
     "validate_path",
+    "validate_psm",
 ]
