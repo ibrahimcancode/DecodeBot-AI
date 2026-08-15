@@ -21,6 +21,7 @@ class Intent(Enum):
     COMPARE = auto()
     TUNE_K = auto()
     RECOMMEND = auto()
+    RECOGNIZE = auto()
     UNKNOWN = auto()
     EMPTY_INPUT = auto()
     NUMERIC_INPUT = auto()

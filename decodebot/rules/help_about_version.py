@@ -18,6 +18,7 @@ COMMANDS: dict[str, tuple[str, Intent]] = {
     "compare": ("Compare classifiers on the same split", Intent.COMPARE),
     "tune-k": ("Tune the KNN K value", Intent.TUNE_K),
     "recommend": ("Recommend careers from your skills", Intent.RECOMMEND),
+    "recognize": ("Recognize text from a local image (optional OCR engine)", Intent.RECOGNIZE),
 }
 
 ML_COMMAND_NAMES: frozenset[str] = frozenset(
@@ -33,6 +34,8 @@ ML_COMMAND_NAMES: frozenset[str] = frozenset(
 )
 
 RECOMMEND_COMMAND_NAMES: frozenset[str] = frozenset({"recommend"})
+
+RECOGNIZE_COMMAND_NAMES: frozenset[str] = frozenset({"recognize"})
 
 ALIASES: dict[str, str] = {
     "?": "help",
@@ -66,12 +69,15 @@ def get_help_text(session=None) -> str:
     items = []
     ml_items = []
     rec_items = []
+    ocr_items = []
     for cmd in sorted(COMMANDS):
         desc = COMMANDS[cmd][0]
         if cmd in ML_COMMAND_NAMES:
             ml_items.append(f"  {cmd:<10} {desc}")
         elif cmd in RECOMMEND_COMMAND_NAMES:
             rec_items.append(f"  {cmd:<10} {desc}")
+        elif cmd in RECOGNIZE_COMMAND_NAMES:
+            ocr_items.append(f"  {cmd:<10} {desc}")
         else:
             items.append(f"  {cmd:<10} {desc}")
     body = "\n".join(items)
@@ -79,6 +85,8 @@ def get_help_text(session=None) -> str:
         body += "\n\nMachine Learning:\n" + "\n".join(ml_items)
     if rec_items:
         body += "\n\nRecommendations:\n" + "\n".join(rec_items)
+    if ocr_items:
+        body += "\n\nOCR / Recognition:\n" + "\n".join(ocr_items)
     footer = f"\n\nDecodeBot AI v{__version__} — type a command to get started!"
     if session and getattr(session, "user_name", None):
         footer = f"\n\nType a command anytime, {session.user_name}!"

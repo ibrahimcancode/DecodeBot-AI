@@ -31,6 +31,13 @@ DEFAULT_CONFIG: dict = {
     "recommender_min_skills": 3,
     "recommender_threshold": 0.0,
     "recommender_random_state": 42,
+    "rec_image_path": "",
+    "rec_psm": 6,
+    "rec_confidence_threshold": 0.80,
+    "rec_max_file_mb": 10,
+    "rec_max_dimension": 4096,
+    "rec_output_dir": "outputs/",
+    "rec_overwrite": False,
 }
 
 CONFIG_SCHEMA: dict = {
@@ -63,6 +70,13 @@ CONFIG_SCHEMA: dict = {
     "recommender_min_skills": int,
     "recommender_threshold": (int, float),
     "recommender_random_state": int,
+    "rec_image_path": str,
+    "rec_psm": int,
+    "rec_confidence_threshold": (int, float),
+    "rec_max_file_mb": (int, float),
+    "rec_max_dimension": int,
+    "rec_output_dir": str,
+    "rec_overwrite": bool,
 }
 
 CONFIG_PATHS = [

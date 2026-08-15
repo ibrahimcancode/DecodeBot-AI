@@ -68,6 +68,13 @@ def dispatch(intent: Intent, session: SessionState) -> str:
         raw_input = getattr(session, "last_input", "") or ""
         return app_recommender.handle_recommend(config, raw_input)
 
+    elif intent == Intent.RECOGNIZE:
+        from decodebot.recognition import app_recognition
+
+        config = getattr(session, "config", None) or load_config()
+        raw_input = getattr(session, "last_input", "") or ""
+        return app_recognition.handle_recognize(config, raw_input)
+
     elif intent == Intent.EMPTY_INPUT:
         return unknown.get_empty_input_response()
 

@@ -34,7 +34,29 @@ RECOGNITION_DIR = os.path.join(DECODEBOT_DIR, "recognition")
 TESTS_DIR = os.path.join(PROJECT_ROOT, "tests")
 
 OCR_LIBRARIES = ("cv2", "pytesseract", "numpy")
-OTHER_SUBSYSTEMS = ("decodebot.core", "decodebot.ml", "decodebot.recommender")
+OTHER_ENGINES = ("decodebot.ml", "decodebot.recommender")
+CHATBRAIN_MODULES = (
+    "decodebot.core.app",
+    "decodebot.core.dispatcher",
+    "decodebot.core.loop",
+    "decodebot.core.rule_engine",
+    "decodebot.core.session",
+    "decodebot.core.responder",
+    "decodebot.core.io_handler",
+    "decodebot.rules",
+)
+"""The Chatbot Engine brain is forbidden inside the recognition package so the
+engine stays a leaf dependency usable without the whole app (FR-249)."""
+
+INFRA_MODULES = (
+    "decodebot.core.config",
+    "decodebot.core.logger",
+    "decodebot.core.intents",
+    "decodebot.utils",
+)
+"""Infrastructure layers the recognition package may legitimately use
+(config, logging, shared intents, formatting) — symmetric with the
+recommender engine (FR-249, FR-251)."""
 
 _WIRING_FILES = {"main.py", "dispatcher.py", "app_gui.py", "app.py"}
 
@@ -139,9 +161,10 @@ def test_no_module_scope_ocr_imports_in_recognition(py_file):
 
 @pytest.mark.parametrize("py_file", _py_files(RECOGNITION_DIR))
 def test_no_other_subsystem_or_tk_imports_in_recognition(py_file):
-    """Recognition must not import other subsystems or tkinter (FR-249)."""
+    """Recognition may use infra (config/formatting) but not the other engines,
+    the chat brain, or tkinter (FR-249)."""
     for module in _imported_modules(py_file):
-        for subsystem in OTHER_SUBSYSTEMS + ("tkinter",):
+        for subsystem in OTHER_ENGINES + CHATBRAIN_MODULES + ("tkinter",):
             assert not _matches(module, subsystem), f"{module} imported in {py_file} (FR-249)"
 
 

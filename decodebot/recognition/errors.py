@@ -37,3 +37,7 @@ class OcrError(RecognitionError):
 
 class UnsupportedPsmError(RecognitionError):
     """A page-segmentation mode outside {3, 6, 7, 11} was requested (FR-254)."""
+
+
+class OutputError(RecognitionError):
+    """Writing recognition output failed (non-writable dir, no-overwrite refusal)."""

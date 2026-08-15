@@ -73,9 +73,11 @@ def _tkinter_gui(config: dict) -> None:
     chat_tab = tk.Frame(notebook, bg="#f0f0f0")
     ml_tab = tk.Frame(notebook, bg="#f0f0f0")
     rec_tab = tk.Frame(notebook, bg="#f0f0f0")
+    ocr_tab = tk.Frame(notebook, bg="#f0f0f0")
     notebook.add(chat_tab, text="Chat")
     notebook.add(ml_tab, text="Machine Learning")
     notebook.add(rec_tab, text="Career Recommender")
+    notebook.add(ocr_tab, text="Recognition")
 
     chat_frame = tk.Frame(chat_tab, bg="#f0f0f0")
     chat_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
@@ -142,6 +144,9 @@ def _tkinter_gui(config: dict) -> None:
 
     rec_panel = _build_recommender_panel(rec_tab, session)
     rec_panel.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+    ocr_panel = _build_recognition_panel(ocr_tab, session)
+    ocr_panel.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
     def _on_close():
         summary = _build_gui_summary(session)
@@ -216,6 +221,50 @@ def _build_recommender_panel(parent, session):
     return RecommenderPanel(
         parent,
         recommend_handler=_recommend_handlers(session)["recommend"],
+        bot_name=bot_name,
+    )
+
+
+def _recognize_handlers(session):
+    """Bind the Recognition tab to the exact CLI function (FR-260).
+
+    The import is lazy so GUI startup never touches the OCR dependencies
+    (FR-250); the first Recognize click pays the import cost. The handler
+    builds the same ``recognize`` command the CLI dispatcher runs, so GUI
+    output matches the terminal.
+    """
+    from decodebot.recognition import app_recognition
+
+    def recognize(image_path, psm=None, save=False):
+        config = getattr(session, "config", None) or {}
+        return app_recognition.recognize_to_text(
+            image_path,
+            psm=psm,
+            plain_mode=bool(config.get("plain_mode", False)),
+            save=save,
+            config=config,
+        )
+
+    def browse() -> str:
+        from tkinter import filedialog
+
+        return filedialog.askopenfilename(
+            title="Select an image to recognize",
+            filetypes=[("Images", "*.png *.jpg *.jpeg")],
+        )
+
+    return {"recognize": recognize, "browse": browse}
+
+
+def _build_recognition_panel(parent, session):
+    from decodebot.gui.recognition_panel import RecognitionPanel
+
+    bot_name = session.config.get("bot_name", "DecodeBot")
+    handlers = _recognize_handlers(session)
+    return RecognitionPanel(
+        parent,
+        recognize_handler=handlers["recognize"],
+        browse_handler=handlers["browse"],
         bot_name=bot_name,
     )
 
