@@ -1,70 +1,86 @@
-# DecodeBot AI — End-of-Project Report (v2.0.0)
+# DecodeBot AI — End-of-Project Report (v3.1.0)
 
-**Project:** DecodeBot AI — Chatbot Engine (Week 1) + Machine Learning Engine (Week 2)
-**Version:** `2.0.0` (`decodebot/__init__.py` + `CHANGELOG.md`)
+**Project:** DecodeBot AI — Chatbot Engine (Week 1) + Machine Learning Engine (Week 2) + Recommender Engine (Week 3) + OCR Recognition Engine (Week 4)
+**Version:** `3.1.0` (`decodebot/__init__.py` + `CHANGELOG.md`)
 **Specification:** `SPEC.md` · **Plan:** `PLAN.md`
 
 ---
 
 ## 1. What Was Delivered
 
-Two engines, fully isolated, in one package:
+Four engines, fully isolated, in one package:
 
 | Engine | Scope | Entry points |
 | --- | --- | --- |
 | **Chatbot Engine (Week 1)** | 100% rule-based NLP: intent matching, rules, configurable sessions, animations, Tkinter GUI | `python main.py`, `decodebot.gui.app_gui` |
-| **Machine Learning Engine (Week 2)** | sklearn classification pipeline: train / predict / evaluate / explore / compare / tune-k, plus a GUI ML tab | `python -m decodebot.ml.app_ml`, `python main.py` (`train`, `predict ...`), `decodebot.gui.ml_panel` |
+| **Machine Learning Engine (Week 2)** | sklearn classification pipeline: train / predict / evaluate / explore / compare / tune-k, plus GUI ML tab | `python -m decodebot.ml.app_ml`, `python main.py` (`train`, `predict ...`), `decodebot.gui.ml_panel` |
+| **Recommender Engine (Week 3)** | Content-based career recommender: TF-IDF feature pipeline, cosine ranking, top-N, fallbacks, GUI tab | `python main.py` (`recommend --skills ...`), `decodebot.gui.recommender_panel` |
+| **OCR Recognition Engine (Week 4)** | Offline image text extraction: PNG/JPEG ingestion, grayscale/blur/deskew/adaptive-threshold preprocessing, Tesseract PSM modes, 80% confidence filtering, GUI Recognition tab | `python main.py` (`recognize --image ...`), `decodebot.gui.recognition_panel` |
 
 Key guarantees enforced by tests:
 
-- **FR-229 / NFR-072 (isolation):** scikit-learn, pandas, numpy, matplotlib, and joblib are imported **only** by modules under `decodebot/ml/` plus the four allowed wiring files (`main.py`, `dispatcher.py`, `app_gui.py`, `app.py`). Verified statically by `tests/test_ml_isolation.py` on every touched file.
-- **FR-223 (P0, safety):** raw chat input can never reach `sklearn.predict` — enforced by an AST static-gate test in `tests/test_ml_isolation.py`.
-- **FR-232 / NFR-075 (lazy startup):** ML deps are imported lazily; a chatbot-only session starts in **~259 ms** (< 300 ms) with all ML deps installed.
-- **FR-231 (standalone entry):** `python -m decodebot.ml.app_ml` runs every ML command headless; the same handlers are reachable through `python main.py --plain` (smoke-tested end-to-end this session).
-- **FR-224/225 (GUI parity):** the Tkinter "Machine Learning" tab calls the identical handler functions as the CLI.
-- **NFR-080 (honest evaluation):** evaluation always reports the confusion matrix + macro-F1 alongside accuracy, and warns on imbalanced data ("accuracy mirage").
+- **FR-249 / NFR-091 (isolation):** OpenCV (`cv2`), `pytesseract`, and `decodebot.recognition` are imported **only** by modules under `decodebot/recognition/` plus the permitted CLI/GUI wiring files (`main.py`, `dispatcher.py`, `app_gui.py`, `app.py`). Verified statically by `tests/test_wave4_isolation.py`.
+- **FR-250 / NFR-095 (lazy startup & optional deps):** OCR libraries are imported lazily inside function scope. Starting `python main.py` or running the chatbot, ML, or recommender engines never loads OCR dependencies or touches Tesseract binaries.
+- **FR-255 (graceful degradation):** Missing `cv2`, `pytesseract`, or system Tesseract binary produces a friendly install message and returns to the session — never an unhandled exception or traceback.
+- **FR-261 / NFR-092 (local-only privacy):** Static scan verifies zero network sockets, HTTP libraries, or telemetry in `decodebot/recognition/`. All processing and output file operations are 100% local.
+- **FR-260 (GUI parity):** The Tkinter "Recognition" tab calls the identical engine function as the CLI `recognize` command.
+
+---
 
 ## 2. Final Test Status
 
 | Measure | Result |
 | --- | --- |
-| Full suite | **546 passed, 3 skipped, 81 warnings, ~49 s** |
-| ML suite | 284 tests, **94% branch coverage** on `decodebot/ml/` (every module ≥ 90%) |
-| Week 2 Compliance Matrix | **8 / 8 rows pass** (`tests/test_ml_compliance.py`) |
-| Week 1 Compliance Matrix | **6 / 6 rows pass** (`tests/test_compliance.py`), zero regression |
-| Code style | All files touched this session pass `black --check` and `ruff check` |
+| Full regression suite | **1025 passed, 2 skipped, 81 warnings, ~22 s** |
+| Recognition test suite | 173 passed, **98% line coverage** on `decodebot/recognition/` (NFR-094 target ≥ 90% passed) |
+| Wave 4 Isolation Gate | **Passed** (`tests/test_wave4_isolation.py`) |
+| Wave 3 Isolation Gate | **Passed** (`tests/test_wave3_isolation.py`) |
+| ML Isolation Gate | **Passed** (`tests/test_ml_isolation.py`) |
+| Weeks 1–3 Compliance | **Passed 100%**, zero regression |
+| Code formatting / linting | `black --check` and `ruff check` pass clean on all changed files |
 
-The 3 skips are all intentional/environmental: two matplotlib-availability degradation tests (`test_visualization.py`, they skip because matplotlib *is* installed — the tests verify the degraded path exists) and one display-gated GUI widget test (skips when no Tk display is available; it passes on this machine when a display is present).
+The 2 skipped tests in the full suite are environmental skips for real Tesseract integration tests when the `tesseract` binary executable is not present on system PATH; all mocked, synthetic, and missing-dependency test paths pass.
 
-> Note: the repository has pre-existing `ruff` warnings (unused imports / line length) in untouched Week 1 files (`core/`, `rules/`). They predate Week 2 and were deliberately left untouched to avoid churn; every file written or edited for Week 2 is clean.
+---
 
-## 3. NFR Benchmarks (verified this session, Iris/KNN/default config)
+## 3. Coverage Report (`decodebot/recognition/`)
 
-| NFR | Threshold | Measured |
-| --- | --- | --- |
-| NFR-066 training time | < 100 ms | **7.3 ms** |
-| NFR-067 prediction latency (single sample) | < 10 ms | **4.7 ms** |
-| NFR-068 full pipeline (load → evaluate) | < 2 s | **0.57 s** |
-| NFR-075 chatbot startup (lazy ML imports) | < 300 ms | **~259 ms** |
+| Module | Statements | Missing Lines | Coverage |
+| --- | --- | --- | --- |
+| `decodebot/recognition/__init__.py` | 6 | 0 | 100% |
+| `decodebot/recognition/app_recognition.py` | 133 | 1 | 99% |
+| `decodebot/recognition/dependencies.py` | 12 | 0 | 100% |
+| `decodebot/recognition/errors.py` | 8 | 0 | 100% |
+| `decodebot/recognition/filter.py` | 39 | 0 | 100% |
+| `decodebot/recognition/ingestor.py` | 70 | 0 | 100% |
+| `decodebot/recognition/ocr_engine.py` | 77 | 2 | 97% |
+| `decodebot/recognition/preprocess.py` | 72 | 3 | 96% |
+| `decodebot/recognition/result.py` | 86 | 4 | 95% |
+| **TOTAL** | **503** | **10** | **98%** |
 
-## 4. Known Quirk (environmental, not a code bug)
+NFR-094 Target (≥ 90%): **PASSED (98%)**.
 
-On this machine, `scikit-learn 1.9.0` exhibits a pathological slow path for `KNeighborsClassifier.predict` when `n_neighbors == floor(n_samples / 2)` on tiny arrays (n=8/k=4, n=12/k=6, n=20/k=10, n=24/k=12 — ~5–6 s per call). Datasets with n ≥ 10 or k ≠ n/2 predict in milliseconds. All code and tests avoid the degenerate k = n/2 configuration; no production impact.
+---
 
-## 5. Artifacts
+## 4. Documentation & Artifacts Delivered
 
-- `docs/ML_GUIDE.md` — user guide (quick start, commands, config, GUI, FR guarantees, dataset attribution).
-- `docs/ARCHITECTURE.md` — two-engine architecture, layering, module table, train→predict data flow, isolation notes.
-- `README.md` — badges, engine overview, try-it transcript, dependency split (FR-230).
-- `CHANGELOG.md` — v2.0.0 release note: *"Added: Machine Learning Data Classification Engine (Week 2). Preserved: 100% rule-based Chatbot Engine (Week 1), unchanged."*
-- `models/knn_iris.json` — committed example model whose metadata doubles as a model card (classifier, hyperparameters, `trained_at`/UTC, dataset, test accuracy, macro-F1). Companion `models/knn_iris.joblib` + `outputs/*.png` (confusion matrix, k-tuning elbow, scaling before/after, model comparison) generated by the training pipeline.
+- `docs/OCR_GUIDE.md` — complete user and developer guide for the OCR engine (quick start, installation, ingestion bounds, preprocessing stages, PSM modes, confidence filtering, CLI/GUI usage, config reference).
+- `docs/CONFIGURATION.md` — extended with recognition config keys (`rec_image_path`, `rec_psm`, `rec_confidence_threshold`, `rec_max_dimension`, `rec_max_file_mb`, `rec_output_dir`, `rec_overwrite`).
+- `docs/GUI_GUIDE.md` — extended with Recognition tab usage and rules.
+- `README.md` — updated badges, engine features, project structure, OCR try-it usage, architecture diagram, test counts, and documentation links.
+- `CHANGELOG.md` — `v3.1.0` release notes documenting all Wave 4 additions.
+- `decodebot/__init__.py` — version updated to `3.1.0`.
 
-## 6. Release Gate
+---
 
-- [x] Week 1 Compliance Matrix re-verified, zero regression.
-- [x] Week 2 Compliance Matrix 8/8.
-- [x] All acceptance criteria boxes checked in `SPEC.md`.
-- [x] All Part I + Part II NFR benchmarks met.
-- [ ] Git tag `v2.0.0` — **pending explicit approval** (not created automatically).
+## 5. Release Gate
 
-**DecodeBot AI v2.0.0 (Chatbot Engine + Machine Learning Engine) is ready to submit and to publish.**
+- [x] All 4 Engines complete & fully isolated.
+- [x] Full `TC-OCR-001`–`012` test suite green.
+- [x] Recognition line coverage 98% (exceeds NFR-094 ≥ 90%).
+- [x] Isolation gates (ML, Wave 3, Wave 4) all pass.
+- [x] Offline privacy static scan clean (zero network I/O).
+- [x] Full regression suite passes (1025 passed).
+- [ ] Git tag `v3.1.0` — **pending explicit user approval** (not created automatically).
+
+**DecodeBot AI v3.1.0 (Chatbot Engine + Machine Learning Engine + Recommender Engine + OCR Recognition Engine) is complete, fully tested, and ready to conclude.**

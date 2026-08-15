@@ -57,6 +57,24 @@ The `recommend` command reads `--skills` (comma- or space-separated) and
 honors `plain_mode` (`config.json`) or the `--plain` command-line flag
 (`FR-133`).
 
+## Recognition Keys (FR-251)
+
+All OCR recognition settings flow through the shared config with per-key
+validation and default fallback; an invalid recognition key never prevents
+startup (FR-094, FR-251).
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `rec_image_path` | str | `""` | Default image file path when omitted from command |
+| `rec_psm` | int | `6` | Tesseract PSM mode (`3`, `6`, `7`, `11`) |
+| `rec_confidence_threshold` | float | `0.80` | Minimum word confidence threshold (`0.0`–`1.0`) |
+| `rec_max_dimension` | int | `4096` | Maximum allowed image edge dimension in pixels |
+| `rec_max_file_mb` | float | `10` | Maximum allowed file size in MB |
+| `rec_output_dir` | str | `"outputs/"` | Directory for saved OCR output text files |
+| `rec_overwrite` | bool | `false` | Allow overwriting existing saved OCR text files |
+
+The `recognize` command accepts `--image` (path), `--psm` (`3`/`6`/`7`/`11`), and `--save`.
+
 ## Example
 
 ```json

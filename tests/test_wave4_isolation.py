@@ -212,3 +212,26 @@ def test_recognition_w4_m1_modules_are_discoverable():
         assert os.path.isfile(
             os.path.join(RECOGNITION_DIR, module_name + ".py")
         ), f"decodebot/recognition/{module_name}.py is missing"
+
+
+def test_tc_ocr_011_privacy_static_scan_no_network_calls():
+    """TC-OCR-011: Static scan for network calls in decodebot/recognition/ (FR-261)."""
+    network_modules = (
+        "socket",
+        "urllib",
+        "requests",
+        "http",
+        "httpx",
+        "aiohttp",
+        "ftplib",
+        "poplib",
+        "imaplib",
+        "smtplib",
+        "ssl",
+    )
+    for py_file in _py_files(RECOGNITION_DIR):
+        for module in _imported_modules(py_file):
+            for net_mod in network_modules:
+                assert not _matches(
+                    module, net_mod
+                ), f"Prohibited network import '{module}' in {py_file} (FR-261, TC-OCR-011)"

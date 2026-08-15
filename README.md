@@ -6,13 +6,14 @@
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-orange)
 ![Supervised Learning](https://img.shields.io/badge/Supervised%20Learning-KNN%20%7C%20Decision%20Tree%20%7C%20SVM%20%7C%20LogReg%20%7C%20RandomForest-brightgreen)
 ![Recommender Engine](https://img.shields.io/badge/Recommender-Content--Based%20%7C%20TF--IDF%20%7C%20Cosine-blueviolet)
+![OCR Engine](https://img.shields.io/badge/OCR-OpenCV%20%7C%20Tesseract-green)
 
 > The **100% Rule-Based** badge describes the *Chatbot Engine only* (Week 1) — the
 > conversational agent is pure deterministic rules with zero NLP/ML. The optional
-> **Machine Learning Engine** (Week 2) and the **Recommendation Engine** (Week 3)
-> are separate, isolated packages.
+> **Machine Learning Engine** (Week 2), **Recommendation Engine** (Week 3), and
+> **OCR Recognition Engine** (Week 4) are separate, isolated packages.
 
-A rule-based conversational agent built in pure Python — the chat brain is 100% rule-based (no NLP, no LLMs, no external APIs), with optional, fully isolated scikit-learn engines for the Week 2 training project (classification, prediction, evaluation) and the Week 3 recommender (content-based career matching).
+A rule-based conversational agent built in pure Python — the chat brain is 100% rule-based (no NLP, no LLMs, no external APIs), with optional, fully isolated scikit-learn engines for the Week 2 training project (classification, prediction, evaluation), the Week 3 recommender (content-based career matching), and the Week 4 OCR engine (image text extraction).
 
 ## Why Rule-Based?
 
@@ -31,16 +32,17 @@ decodebot-ai/
 │   ├── core/                   # Chatbot engine (config, dispatcher, loop, ...)
 │   ├── rules/                  # Rule modules (greetings, exit, help, ...)
 │   ├── utils/                  # Animations, normalization, formatting, ...
-│   ├── gui/                    # Tkinter GUI + ML + Career Recommender tabs
+│   ├── gui/                    # Tkinter GUI + ML + Career Recommender + Recognition tabs
 │   ├── ml/                     # Isolated ML Engine (train/predict/evaluate)
 │   ├── recommender/            # Isolated Recommender Engine (recommend)
+│   ├── recognition/            # Isolated OCR Recognition Engine (recognize)
 │   └── plugins/                # Optional user-provided rule plugins
 │
 ├── models/                     # Trained models + metadata model cards
-├── outputs/                    # Generated plots (confusion matrix, elbow, ...)
+├── outputs/                    # Generated plots & saved OCR text files
 ├── datasets/                   # Dataset notes / future CSV datasets
-├── docs/                       # ARCHITECTURE, ML_GUIDE, RECOMMENDER_GUIDE, ...
-└── tests/                      # 800+ unit, integration, compliance tests
+├── docs/                       # ARCHITECTURE, ML_GUIDE, RECOMMENDER_GUIDE, OCR_GUIDE, ...
+└── tests/                      # 1000+ unit, integration, compliance, isolation tests
 ```
 
 ## Features
@@ -70,6 +72,13 @@ decodebot-ai/
 - Cosine-similarity ranking with deterministic Top-N (default 3) tie-breaking
 - Cold-start / zero-match / partial-match fallbacks, never a crash
 - GUI Career Recommender tab calling the identical engine function as the CLI
+- **OCR Engine (Week 4):** `recognize` command for image text extraction
+- PNG and JPEG image ingestion with size (10MB) and dimension (4096px) limits
+- Preprocessing pipeline: grayscale, 5x5 Gaussian blur, auto-deskew (>0.5°), adaptive thresholding
+- Tesseract OCR integration with PSM modes (`3`, `6`, `7`, `11`)
+- Confidence filtering (default 80%) with structured status (`accepted`, `low_confidence`, `no_text`, `error`)
+- GUI Recognition tab with file browser and inline preview
+- Full OCR dependency isolation (FR-249) and local privacy guarantee (FR-261)
 
 ## Installation
 
@@ -247,6 +256,26 @@ $ python main.py
 See [docs/RECOMMENDER_GUIDE.md](docs/RECOMMENDER_GUIDE.md) for the full engine
 explanation, configuration reference, and behavior guarantees.
 
+## OCR Image/Text Recognition Engine (Week 4, Optional)
+
+Wave 4 adds an offline OCR image/text recognition engine in an isolated package,
+`decodebot/recognition/` (FR-249). Extract text from PNG/JPEG documents with
+automated image preprocessing (grayscale, Gaussian blur, auto-deskew, adaptive
+thresholding), configurable PSM modes (`3`, `6`, `7`, `11`), 80% confidence
+filtering, and structured result statuses (`accepted`, `low_confidence`,
+`no_text`, `error`).
+
+### Try it
+
+```bash
+python main.py recognize --image "samples/sample_text.png" --psm 6
+```
+
+Or use the GUI's **Recognition** tab (`python main.py --gui`) — it calls the
+identical engine function as the CLI (FR-260).
+
+See [docs/OCR_GUIDE.md](docs/OCR_GUIDE.md) for full details.
+
 ## Architecture
 
 DecodeBot uses a clean layered architecture:
@@ -257,8 +286,9 @@ DecodeBot uses a clean layered architecture:
 - **Infrastructure Layer:** Config, logging, stats, history (`core/config.py`, `core/logger.py`, `core/stats.py`, `core/history.py`)
 - **ML Engine (isolated):** `ml/` package — dataset loading, preprocessing, training, prediction, evaluation, persistence, visualization (`ml/app_ml.py` is the single lazy bridge)
 - **Recommender Engine (isolated):** `recommender/` package — corpus, normalization, TF-IDF features, cosine ranking, fallbacks (`recommender/app_recommender.py` is the single lazy bridge)
+- **Recognition Engine (isolated):** `recognition/` package — ingestion, preprocessing, Tesseract OCR, confidence filtering, result formatting (`recognition/app_recognition.py` is the single lazy bridge)
 
-See `docs/ARCHITECTURE.md`, `docs/ML_GUIDE.md`, `docs/RECOMMENDER_GUIDE.md`, and `SPEC.md` for full details.
+See `docs/ARCHITECTURE.md`, `docs/ML_GUIDE.md`, `docs/RECOMMENDER_GUIDE.md`, `docs/OCR_GUIDE.md`, and `SPEC.md` for full details.
 
 ## Testing
 
@@ -268,10 +298,11 @@ python -m pytest
 
 The test suite includes:
 - 8 mandatory compliance gate tests (Week 2 matrix)
-- 800+ unit, integration, regression, and edge-case tests
+- 1000+ unit, integration, regression, and edge-case tests
 - ML dependency isolation gate (FR-229) and lazy-startup gate (FR-232)
 - Recommender isolation gate (FR-233, `tests/test_wave3_isolation.py`)
-- Full `TC-REC-001`–`012` recommender suite with 100% line coverage on `decodebot/recommender/`
+- Recognition isolation gate (FR-249, `tests/test_wave4_isolation.py`)
+- Full `TC-OCR-001`–`012` OCR suite with 98% line coverage on `decodebot/recognition/`
 - Plugin interface, animation, and error-handling tests
 
 ## Documentation
@@ -279,6 +310,7 @@ The test suite includes:
 - [Configuration](docs/CONFIGURATION.md)
 - [ML Guide](docs/ML_GUIDE.md)
 - [Recommender Guide](docs/RECOMMENDER_GUIDE.md)
+- [OCR Guide](docs/OCR_GUIDE.md)
 - [GUI Guide](docs/GUI_GUIDE.md)
 - [Plugin Guide](docs/PLUGIN_GUIDE.md)
 - [Hidden Commands](docs/HIDDEN_COMMANDS.md)

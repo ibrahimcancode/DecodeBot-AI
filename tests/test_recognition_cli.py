@@ -19,6 +19,7 @@ Reference: SPEC.md Part IV — FR-251, FR-259-FR-261, NFR-091-NFR-095.
 import os
 import subprocess
 import sys
+import unittest.mock
 
 
 from decodebot import recognition as recognition
@@ -310,3 +311,96 @@ class TestStartupIsolation:
         result = _run_subprocess(script)
         assert result.returncode == 0, result.stdout + result.stderr
         assert "OK" in result.stdout
+
+
+class TestRecognizedCoverage:
+    """Targeted coverage for app_recognition.py success/edge paths (NFR-094)."""
+
+    def _ok_output(self):
+        return recognition.OcrOutput(
+            words=(recognition.Word(text="hello", confidence=0.95, bbox=(0, 0, 1, 1), order=0),),
+            full_text="hello",
+            psm=6,
+        )
+
+    def test_parse_ignores_unknown_flags(self):
+        args = app_recognition.parse_recognize_args("recognize --image x.png --verbose 5 --psm 7")
+        assert args.image_path == "x.png"
+        assert args.psm == 7
+        assert args.save is False
+
+    def test_recognize_image_unsupported_psm_is_error(self, monkeypatch):
+        monkeypatch.setattr(app_recognition, "run_ocr", lambda image, psm=6: self._ok_output())
+        monkeypatch.setattr(
+            app_recognition,
+            "preprocess_image",
+            lambda image: (image, {"deskew_applied": False, "detected_angle": 0.0}),
+        )
+        result = app_recognition.recognize_image(FIXTURE_IMAGE, psm=1)
+        assert result.status == recognition.STATUS_ERROR
+        assert "Unsupported PSM" in result.message
+
+    def test_recognize_image_success_builds_result(self, monkeypatch):
+        monkeypatch.setattr(app_recognition, "run_ocr", lambda image, psm=6: self._ok_output())
+        monkeypatch.setattr(
+            app_recognition,
+            "preprocess_image",
+            lambda image: (image, {"deskew_applied": False, "detected_angle": 0.0}),
+        )
+        result = app_recognition.recognize_image(FIXTURE_IMAGE, psm=6)
+        assert result.status == recognition.STATUS_ACCEPTED
+        assert result.text == "hello"
+        assert [word.text for word in result.words] == ["hello"]
+
+    def test_recognize_image_save_writes_file(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(app_recognition, "run_ocr", lambda image, psm=6: self._ok_output())
+        monkeypatch.setattr(
+            app_recognition,
+            "preprocess_image",
+            lambda image: (image, {"deskew_applied": False, "detected_angle": 0.0}),
+        )
+        result = app_recognition.recognize_image(
+            FIXTURE_IMAGE, psm=6, output_dir=str(tmp_path), save=True
+        )
+        assert result.saved_to is not None
+        assert os.path.isfile(result.saved_to)
+        assert open(result.saved_to, encoding="utf-8").read() == "hello"
+
+    def test_handle_recognize_missing_image_returns_usage(self):
+        text = app_recognition.handle_recognize(dict(DEFAULT_CONFIG), "recognize")
+        assert "--image" in text
+
+    def test_handle_recognize_plain_mode_no_box_chars(self):
+        config = dict(DEFAULT_CONFIG)
+        config["plain_mode"] = True
+        with (
+            unittest.mock.patch.object(
+                app_recognition, "run_ocr", lambda image, psm=6: self._ok_output()
+            ),
+            unittest.mock.patch.object(
+                app_recognition,
+                "preprocess_image",
+                lambda image: (image, {"deskew_applied": False, "detected_angle": 0.0}),
+            ),
+        ):
+            text = app_recognition.handle_recognize(
+                config, 'recognize --image "samples/sample_text.png"'
+            )
+        assert "\u250c" not in text
+        assert "Status: Accepted" in text
+
+    def test_render_result_with_deskew(self):
+        words = (recognition.Word(text="ok", confidence=0.95, bbox=(0, 0, 1, 1), order=0),)
+        result = recognition.build_result(words, deskew_applied=True, detected_angle=-2.50)
+        rendered = app_recognition.render_result(result, plain=False)
+        assert "Deskew: applied (-2.50\u00b0)" in rendered
+
+    def test_recognize_to_text_loads_default_config(self, monkeypatch):
+        monkeypatch.setattr(app_recognition, "run_ocr", lambda image, psm=6: self._ok_output())
+        monkeypatch.setattr(
+            app_recognition,
+            "preprocess_image",
+            lambda image: (image, {"deskew_applied": False, "detected_angle": 0.0}),
+        )
+        text = app_recognition.recognize_to_text(FIXTURE_IMAGE, psm=6)
+        assert isinstance(text, str)

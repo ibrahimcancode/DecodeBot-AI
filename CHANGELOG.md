@@ -1,5 +1,31 @@
 # Changelog
 
+## [3.1.0] - 2026-08-15
+
+> **Release note:** Added (Optional): OCR Image/Text Recognition Engine
+> (Week 4). Preserved: Chatbot Engine (Week 1), ML Engine (Week 2),
+> Recommender Engine (Week 3) — all unchanged and unaffected.
+
+### Added
+- OCR Recognition Engine (Week 4) — isolated `decodebot/recognition/` package
+- `recognize` command wired into the shared `COMMANDS` registry with its own "OCR / Recognition" help section
+- Image ingestion supporting PNG and JPEG, enforcing file size (`rec_max_file_mb`) and dimension (`rec_max_dimension`) limits
+- Preprocessing pipeline: grayscale conversion, 5x5 Gaussian blur, auto-deskew (>0.5° skew correction), and Gaussian adaptive thresholding
+- Tesseract OCR integration with PSM modes (`3`, `6`, `7`, `11`) via `pytesseract.image_to_data`
+- Confidence filtering (80% default threshold) and structured `RecognitionResult` outputs (`accepted`, `low_confidence`, `no_text`, `error`)
+- `--save` flag writing extracted text to output directory without overwriting unless `rec_overwrite: true`
+- GUI **Recognition** tab calling the identical engine function as the CLI
+- Recognition config keys (`rec_image_path`, `rec_psm`, `rec_confidence_threshold`, `rec_max_dimension`, `rec_max_file_mb`, `rec_output_dir`, `rec_overwrite`)
+- Friendly missing-dependency handling for OpenCV, pytesseract, and Tesseract binary (FR-255)
+- Privacy verification confirming zero network I/O or telemetry (FR-261)
+- Recognition isolation gate (`tests/test_wave4_isolation.py`), lazy imports, and startup preservation (FR-249, FR-250)
+- Full `TC-OCR-001`–`012` suite with 98% line coverage on `decodebot/recognition/` (target ≥ 90%)
+- `docs/OCR_GUIDE.md` and extended `docs/CONFIGURATION.md`
+
+### Changed
+- `__version__` bumped to 3.1.0
+- README and GUI guide updated with OCR documentation
+
 ## [3.0.0] - 2026-08-13
 
 > **Release note:** Added: Content-Based Tech Stack Recommendation Engine

@@ -278,6 +278,21 @@ def test_ingest_never_imports_real_cv2_when_mocked(monkeypatch, tmp_path):
             sys.modules["cv2"] = real_cv2
 
 
+def test_import_optional_missing_dependency(monkeypatch):
+    from decodebot.recognition.dependencies import import_optional
+    from decodebot.recognition.errors import DependencyUnavailableError
+
+    def _fake_import(name):
+        raise ImportError(f"No module named {name}")
+
+    monkeypatch.setattr("importlib.import_module", _fake_import)
+    with pytest.raises(DependencyUnavailableError) as exc_info:
+        import_optional("cv2")
+    message = str(exc_info.value)
+    assert "opencv-python-headless" in message
+    assert "pip install -r requirements-ocr.txt" in message
+
+
 @pytest.mark.skipif(
     importlib.util.find_spec("cv2") is None,
     reason="OpenCV not installed (optional dependency)",
